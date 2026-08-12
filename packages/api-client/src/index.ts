@@ -6,6 +6,10 @@ export * from './mutator';
 
 // Generated React Query hooks (one export line per OpenAPI tag).
 export * from './generated/menu/menu';
+export * from './generated/orders/orders';
+export * from './generated/customers/customers';
+export * from './generated/settings/settings';
+export * from './generated/home/home';
 
 // Generated models/types.
 export * from './generated/model';
