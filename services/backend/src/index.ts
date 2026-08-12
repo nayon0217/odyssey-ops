@@ -1,5 +1,7 @@
 import { OpenAPIHono } from '@hono/zod-openapi';
 import { cors } from 'hono/cors';
+import { sql } from 'drizzle-orm';
+import { createDb } from './db/client';
 import type { Env } from './env';
 
 export function createApp() {
@@ -24,6 +26,13 @@ export function createApp() {
 
   app.get('/', (c) => c.json({ name: 'Odyssey Ops API', status: 'ok' }));
   app.get('/health', (c) => c.json({ status: 'ok' }));
+
+  // DB connectivity check through Hyperdrive -> Postgres (validates nodejs_compat + pg in workerd).
+  app.get('/health/db', async (c) => {
+    const db = createDb(c.env.HYPERDRIVE.connectionString);
+    const rows = await db.execute(sql`select 1 as ok`);
+    return c.json({ status: 'ok', db: rows.rows[0] });
+  });
 
   // OpenAPI document (served live for humans; also emitted to file by gen:contract).
   app.doc('/openapi.json', {

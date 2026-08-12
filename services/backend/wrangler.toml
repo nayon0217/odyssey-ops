@@ -9,7 +9,7 @@ compatibility_flags = ["nodejs_compat"]
 [[hyperdrive]]
 binding = "HYPERDRIVE"
 id = "0000000000000000000000000000000000"
-localConnectionString = "postgresql://postgres:postgres@localhost:5432/odyssey"
+localConnectionString = "postgresql://postgres:postgres@localhost:5433/odyssey"
 
 [observability]
 enabled = true
