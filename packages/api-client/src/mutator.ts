@@ -1,0 +1,56 @@
+// Custom fetch mutator used by every Orval-generated hook.
+// Centralizes base URL, JSON handling, and typed error shape so generated code
+// never hard-codes transport concerns.
+
+const BASE_URL =
+  (typeof process !== 'undefined' && process.env?.EXPO_PUBLIC_API_URL) || 'http://localhost:8787';
+
+export interface ApiError {
+  status: number;
+  code: string;
+  message: string;
+  details?: unknown;
+}
+
+export class ApiClientError extends Error implements ApiError {
+  status: number;
+  code: string;
+  details?: unknown;
+  constructor(err: ApiError) {
+    super(err.message);
+    this.name = 'ApiClientError';
+    this.status = err.status;
+    this.code = err.code;
+    this.details = err.details;
+  }
+}
+
+function resolveUrl(url: string): string {
+  if (/^https?:\/\//.test(url)) return url;
+  return `${BASE_URL}${url.startsWith('/') ? '' : '/'}${url}`;
+}
+
+export const customFetch = async <T>(url: string, options?: RequestInit): Promise<T> => {
+  const response = await fetch(resolveUrl(url), {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(options?.headers ?? {}),
+    },
+  });
+
+  const isJson = response.headers.get('content-type')?.includes('application/json');
+  const body = isJson ? await response.json().catch(() => undefined) : await response.text();
+
+  if (!response.ok) {
+    const errEnvelope = (body as { error?: Partial<ApiError> })?.error;
+    throw new ApiClientError({
+      status: response.status,
+      code: errEnvelope?.code ?? 'HTTP_ERROR',
+      message: errEnvelope?.message ?? `Request failed with status ${response.status}`,
+      details: errEnvelope?.details,
+    });
+  }
+
+  return body as T;
+};
