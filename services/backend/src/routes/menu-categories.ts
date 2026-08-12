@@ -1,10 +1,7 @@
 import { createRoute, z } from '@hono/zod-openapi';
 import { createDb } from '../db/client';
-import {
-  menuCategories,
-  menuCategorySelectSchema,
-  menuCategoryInsertSchema,
-} from '../db/schema';
+import { menuCategories } from '../db/schema';
+import { menuCategorySelectSchema, menuCategoryInsertSchema } from '../db/zod-schemas';
 import { createRouter } from '../lib/openapi';
 
 const router = createRouter();

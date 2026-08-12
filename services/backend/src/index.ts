@@ -3,6 +3,11 @@ import { sql } from 'drizzle-orm';
 import { createDb } from './db/client';
 import { createRouter } from './lib/openapi';
 import menuCategoriesRouter from './routes/menu-categories';
+import menuItemsRouter from './routes/menu-items';
+import customersRouter from './routes/customers';
+import ordersRouter from './routes/orders';
+import settingsRouter from './routes/settings';
+import homeRouter from './routes/home';
 
 export function createApp() {
   const app = createRouter();
@@ -21,6 +26,11 @@ export function createApp() {
 
   // Feature routes.
   app.route('/', menuCategoriesRouter);
+  app.route('/', menuItemsRouter);
+  app.route('/', customersRouter);
+  app.route('/', ordersRouter);
+  app.route('/', settingsRouter);
+  app.route('/', homeRouter);
 
   // OpenAPI document (served live for humans; also emitted to file by gen:contract).
   app.doc('/openapi.json', {

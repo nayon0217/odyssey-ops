@@ -145,6 +145,9 @@ importers:
       '@hono/zod-openapi':
         specifier: ^0.18.3
         version: 0.18.4(hono@4.13.1)(zod@3.25.76)
+      '@odyssey/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       drizzle-orm:
         specifier: ^0.38.3
         version: 0.38.4(@cloudflare/workers-types@4.20260702.1)(@types/pg@8.21.0)(@types/react@19.2.18)(pg@8.23.0)(react@19.2.3)
