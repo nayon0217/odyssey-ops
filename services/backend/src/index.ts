@@ -1,26 +1,11 @@
-import { OpenAPIHono } from '@hono/zod-openapi';
 import { cors } from 'hono/cors';
 import { sql } from 'drizzle-orm';
 import { createDb } from './db/client';
-import type { Env } from './env';
+import { createRouter } from './lib/openapi';
+import menuCategoriesRouter from './routes/menu-categories';
 
 export function createApp() {
-  const app = new OpenAPIHono<{ Bindings: Env }>({
-    defaultHook: (result, c) => {
-      if (!result.success) {
-        return c.json(
-          {
-            error: {
-              code: 'VALIDATION_ERROR',
-              message: 'Request validation failed',
-              details: result.error.flatten(),
-            },
-          },
-          422,
-        );
-      }
-    },
-  });
+  const app = createRouter();
 
   app.use('*', cors());
 
@@ -33,6 +18,9 @@ export function createApp() {
     const rows = await db.execute(sql`select 1 as ok`);
     return c.json({ status: 'ok', db: rows.rows[0] });
   });
+
+  // Feature routes.
+  app.route('/', menuCategoriesRouter);
 
   // OpenAPI document (served live for humans; also emitted to file by gen:contract).
   app.doc('/openapi.json', {

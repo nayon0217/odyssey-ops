@@ -1,6 +1,9 @@
 // Custom fetch mutator used by every Orval-generated hook.
-// Centralizes base URL, JSON handling, and typed error shape so generated code
-// never hard-codes transport concerns.
+// Centralizes base URL, JSON handling, and typed errors so generated code never
+// hard-codes transport concerns.
+//
+// Orval's fetch client expects the mutator to resolve to `{ status, data, headers }`
+// (the generated response types are shaped that way), so callers read `result.data`.
 
 // Expo inlines EXPO_PUBLIC_* at build time; declared here to stay dependency-free
 // across web/native without pulling in @types/node.
@@ -56,5 +59,5 @@ export const customFetch = async <T>(url: string, options?: RequestInit): Promis
     });
   }
 
-  return body as T;
+  return { status: response.status, data: body, headers: response.headers } as T;
 };
