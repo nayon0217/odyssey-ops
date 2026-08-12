@@ -7,7 +7,7 @@
     "gen:contract": { "cache": false },
     "gen:client": { "cache": false },
     "lint": {},
-    "typecheck": { "dependsOn": ["^build"] },
-    "test": { "dependsOn": ["^build"] }
+    "typecheck": {},
+    "test": {}
   }
 }

@@ -1,0 +1,8 @@
+**/node_modules/**
+**/dist/**
+**/.expo/**
+**/.turbo/**
+**/.wrangler/**
+**/drizzle/**
+packages/api-client/src/generated/**
+pnpm-lock.yaml

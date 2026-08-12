@@ -2,6 +2,10 @@
 // Centralizes base URL, JSON handling, and typed error shape so generated code
 // never hard-codes transport concerns.
 
+// Expo inlines EXPO_PUBLIC_* at build time; declared here to stay dependency-free
+// across web/native without pulling in @types/node.
+declare const process: { env?: Record<string, string | undefined> } | undefined;
+
 const BASE_URL =
   (typeof process !== 'undefined' && process.env?.EXPO_PUBLIC_API_URL) || 'http://localhost:8787';
 
