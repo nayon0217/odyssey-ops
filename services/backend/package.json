@@ -14,7 +14,7 @@
     "db:seed": "dotenv -e .dev.vars -- tsx src/db/seed.ts",
     "lint": "eslint . --max-warnings 0",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "dotenv -e .dev.vars -- vitest run"
   },
   "dependencies": {
     "@hono/zod-openapi": "^0.18.3",

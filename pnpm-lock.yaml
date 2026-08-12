@@ -126,6 +126,10 @@ importers:
         version: 5.9.3
 
   packages/ui:
+    dependencies:
+      '@odyssey/shared':
+        specifier: workspace:*
+        version: link:../shared
     devDependencies:
       '@types/react':
         specifier: ~19.2.2

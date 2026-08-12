@@ -13,6 +13,9 @@
     "lint": "eslint . --max-warnings 0",
     "typecheck": "tsc --noEmit"
   },
+  "dependencies": {
+    "@odyssey/shared": "workspace:*"
+  },
   "peerDependencies": {
     "react": "*",
     "react-native": "*"
