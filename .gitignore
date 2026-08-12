@@ -1,0 +1,35 @@
+# deps
+node_modules/
+.pnpm-store/
+
+# build outputs
+dist/
+.output/
+.expo/
+web-build/
+.turbo/
+
+# env & secrets
+.env
+.env.*
+!.env.example
+.dev.vars
+.dev.vars.*
+
+# db
+pgdata/
+
+# logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# os / editor
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# misc
+coverage/
+*.tsbuildinfo

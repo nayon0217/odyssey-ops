@@ -1,0 +1,26 @@
+{
+  "name": "odyssey-ops",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@9.15.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev:dashboard": "turbo run dev --filter=@odyssey/dashboard",
+    "dev:backend": "turbo run dev --filter=backend",
+    "db:up": "docker compose up -d db",
+    "db:down": "docker compose down",
+    "db:push": "pnpm --filter backend db:push",
+    "db:seed": "pnpm --filter backend db:seed",
+    "gen:contract": "pnpm --filter backend gen:contract && pnpm --filter @odyssey/api-client gen:client",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "build": "turbo run build"
+  },
+  "devDependencies": {
+    "turbo": "^2.3.3",
+    "typescript": "^5.7.2"
+  }
+}
