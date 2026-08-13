@@ -8,6 +8,7 @@ import {
   boolean,
   timestamp,
 } from 'drizzle-orm/pg-core';
+import { ORDER_STATUSES, type OrderStatus } from '@odyssey/shared';
 
 // Timestamps use mode:'string' so the generated contract types them as strings —
 // matching what actually crosses the wire as JSON (no Date/string mismatch).
@@ -16,16 +17,13 @@ const createdAt = () =>
 const updatedAt = () =>
   timestamp({ withTimezone: true, mode: 'string' }).notNull().defaultNow();
 
-// Single source of truth for order status. Mirrored (values only) by the state
-// machine in @odyssey/shared, which both backend and frontend import.
-export const orderStatusEnum = pgEnum('order_status', [
-  'pending',
-  'accepted',
-  'preparing',
-  'ready',
-  'completed',
-  'cancelled',
-]);
+// The order-status values have a single source: @odyssey/shared. The Postgres enum,
+// the derived Zod/OpenAPI types, and the frontend state machine all trace back here,
+// so the value list can never drift between the DB and the app.
+export const orderStatusEnum = pgEnum(
+  'order_status',
+  ORDER_STATUSES as unknown as [OrderStatus, ...OrderStatus[]],
+);
 
 export const menuCategories = pgTable('menu_categories', {
   id: uuid().defaultRandom().primaryKey(),
