@@ -1,10 +1,12 @@
 import type { TextStyle } from 'react-native';
 
-// Plus Jakarta Sans is the Ody brand face — a geometric humanist sans with the friendly,
-// slightly-rounded character the pastel theme calls for. system-ui / SF Pro is the graceful
-// fallback (and matches the platform's own optical tuning). Loaded on web via +html.tsx.
+// Type pairing for the pastel ops console:
+// - Instrument Serif: display / KPIs / page headings (geometric serif)
+// - Plus Jakarta Sans: body / UI chrome (clean geometric humanist sans)
+// Loaded on web via WebFonts / +html.tsx.
 const fontFamily = {
-  base: "'Plus Jakarta Sans', 'SF Pro Display', -apple-system, system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
+  display: "'Instrument Serif', Georgia, 'Times New Roman', serif",
+  base: "'Plus Jakarta Sans', 'SF Pro Text', -apple-system, system-ui, 'Segoe UI', sans-serif",
   mono: "'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace",
 } as const;
 
@@ -13,7 +15,7 @@ const weight = {
   medium: '500',
   semibold: '600',
   bold: '700',
-  extrabold: '800',
+  extrabold: '700',
 } as const;
 
 const size = {
@@ -25,115 +27,117 @@ const size = {
   xl: 22,
   '2xl': 27,
   '3xl': 34,
-  '4xl': 44,
-  '5xl': 56,
+  '4xl': 40,
+  '5xl': 48,
 } as const;
 
 // Apple typography discipline: tracking is size-specific. Large display text gets
 // NEGATIVE tracking (it reads too loose as it grows); small text gets a slight positive
-// bump for legibility; body sits near zero. Leading tightens as size grows.
+// bump for legibility; body sits near zero. Leading tightens as size grows — but stays
+// above the em size so glyphs never clip.
 export const textVariants = {
-  // Big attention-grabbing numerals for KPIs / hero stats. Extrabold, very tight tracking,
+  // Big attention-grabbing numerals for KPIs / hero stats. Tight tracking,
   // and TABULAR figures so digits stay column-aligned as values change.
+  // lineHeight is deliberately > fontSize so descenders/currency symbols aren't clipped.
   stat: {
-    fontFamily: fontFamily.base,
+    fontFamily: fontFamily.display,
     fontSize: size['5xl'],
-    fontWeight: weight.extrabold,
-    lineHeight: 58,
-    letterSpacing: -2,
+    fontWeight: weight.regular,
+    lineHeight: 56,
+    letterSpacing: -1.2,
     fontVariant: ['tabular-nums'] as TextStyle['fontVariant'],
   },
   statSm: {
-    fontFamily: fontFamily.base,
+    fontFamily: fontFamily.display,
     fontSize: size['4xl'],
-    fontWeight: weight.extrabold,
-    lineHeight: 46,
-    letterSpacing: -1.4,
+    fontWeight: weight.regular,
+    lineHeight: 48,
+    letterSpacing: -0.8,
     fontVariant: ['tabular-nums'] as TextStyle['fontVariant'],
   },
   display: {
-    fontFamily: fontFamily.base,
+    fontFamily: fontFamily.display,
     fontSize: size['3xl'],
-    fontWeight: weight.extrabold,
-    lineHeight: 40,
-    letterSpacing: -1,
+    fontWeight: weight.regular,
+    lineHeight: 42,
+    letterSpacing: -0.8,
   },
   h1: {
-    fontFamily: fontFamily.base,
+    fontFamily: fontFamily.display,
     fontSize: size['2xl'],
-    fontWeight: weight.extrabold,
-    lineHeight: 34,
-    letterSpacing: -0.7,
+    fontWeight: weight.regular,
+    lineHeight: 36,
+    letterSpacing: -0.5,
   },
   h2: {
-    fontFamily: fontFamily.base,
+    fontFamily: fontFamily.display,
     fontSize: size.xl,
-    fontWeight: weight.semibold,
-    lineHeight: 28,
-    letterSpacing: -0.4,
+    fontWeight: weight.regular,
+    lineHeight: 30,
+    letterSpacing: -0.3,
   },
   h3: {
     fontFamily: fontFamily.base,
     fontSize: size.lg,
     fontWeight: weight.semibold,
-    lineHeight: 24,
-    letterSpacing: -0.2,
+    lineHeight: 26,
+    letterSpacing: -0.15,
   },
   title: {
     fontFamily: fontFamily.base,
     fontSize: size.md,
     fontWeight: weight.semibold,
-    lineHeight: 22,
-    letterSpacing: -0.1,
+    lineHeight: 24,
+    letterSpacing: -0.05,
   },
   body: {
     fontFamily: fontFamily.base,
     fontSize: size.base,
     fontWeight: weight.regular,
-    lineHeight: 22,
+    lineHeight: 24,
     letterSpacing: 0,
   },
   bodyStrong: {
     fontFamily: fontFamily.base,
     fontSize: size.base,
     fontWeight: weight.semibold,
-    lineHeight: 22,
+    lineHeight: 24,
     letterSpacing: 0,
   },
   bodySm: {
     fontFamily: fontFamily.base,
     fontSize: size.sm,
     fontWeight: weight.regular,
-    lineHeight: 18,
+    lineHeight: 20,
     letterSpacing: 0,
   },
   label: {
     fontFamily: fontFamily.base,
     fontSize: size.sm,
     fontWeight: weight.medium,
-    lineHeight: 18,
+    lineHeight: 20,
     letterSpacing: 0.1,
   },
   caption: {
     fontFamily: fontFamily.base,
     fontSize: size.xs,
     fontWeight: weight.regular,
-    lineHeight: 16,
-    letterSpacing: 0.2,
+    lineHeight: 18,
+    letterSpacing: 0.15,
   },
   overline: {
     fontFamily: fontFamily.base,
     fontSize: size.xs,
     fontWeight: weight.semibold,
-    lineHeight: 16,
-    letterSpacing: 0.8,
+    lineHeight: 18,
+    letterSpacing: 0.9,
     textTransform: 'uppercase',
   },
   mono: {
     fontFamily: fontFamily.mono,
     fontSize: size.sm,
     fontWeight: weight.regular,
-    lineHeight: 18,
+    lineHeight: 20,
     letterSpacing: 0,
   },
 } satisfies Record<string, TextStyle>;

@@ -86,7 +86,7 @@ export default function HomePage() {
         </Stack>
       ) : page.summary ? (
         <Stack gap="lg">
-          <Grid minChildWidth={220} gap="lg">
+          <Grid minChildWidth={240} gap="lg">
             <StatCard label="Total orders" value={String(page.summary.totalOrders)} icon="orders" tone="lavender" />
             <StatCard label="Revenue" value={formatMoney(page.summary.revenueCents)} icon="revenue" tone="mint" />
             <StatCard label="Pending orders" value={String(page.summary.pendingOrders)} icon="timer" tone="peach" />
@@ -166,7 +166,7 @@ function StatCard({
         </View>
         <Stack gap="xs">
           {kind === 'number' ? (
-            <Text variant="stat" numberOfLines={1}>
+            <Text variant={value.length > 8 ? 'statSm' : 'stat'} style={styles.statValue}>
               {value}
             </Text>
           ) : (
@@ -196,6 +196,11 @@ const styles = StyleSheet.create({
     borderRadius: tokens.radius.md,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  // Let long currency values wrap / shrink the line box instead of clipping mid-digit.
+  statValue: {
+    flexShrink: 1,
+    width: '100%',
   },
   loading: { padding: tokens.spacing['2xl'] },
   tableHeader: { padding: tokens.spacing.xl, paddingBottom: 0 },

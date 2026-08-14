@@ -97,7 +97,8 @@ not NativeWind — it gives the cleanest "tokens are centralized" story, identic
 native, and zero extra build config. The visual identity is a **pastel** restaurant-SaaS register
 (lilac-gray canvas, periwinkle primary, soft status tints) — the semantic token *structure* is
 unchanged from the original blue theme, so the intent behind every token still holds; only the
-values moved. Brand face is **Plus Jakarta Sans**; KPIs use a big-number `stat` type variant with
+values moved. Brand face is a display/body pairing — **Instrument Serif** (KPIs/headings) +
+**Plus Jakarta Sans** (body UI); KPIs use a big-number `stat` type variant with
 tabular figures. Icons are **illustrated line icons** via a single `Icon` primitive
 (`react-native-svg`, Lucide geometry) — **no emoji in the UI**. Motion/interaction follow Apple's
 fluid-interface guidance (instant press feedback, restraint, clear feedback states).

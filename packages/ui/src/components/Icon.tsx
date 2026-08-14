@@ -152,7 +152,8 @@ export type IconProps = {
   color?: TextColorToken | string;
   strokeWidth?: number;
   testID?: string;
-} & Pick<SvgProps, 'style'>;
+  style?: SvgProps['style'];
+};
 
 export function Icon({ name, size = 20, color = 'secondary', strokeWidth = 1.8, testID, style }: IconProps) {
   const textColors = tokens.colors.text as Record<string, string>;

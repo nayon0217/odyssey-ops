@@ -105,15 +105,18 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    height: 40,
+    minHeight: 44,
     borderRadius: tokens.radius.md,
     borderWidth: tokens.border.thin,
     paddingHorizontal: tokens.spacing.md,
+    paddingVertical: 10,
     gap: tokens.spacing.sm,
   },
   input: {
     flex: 1,
-    height: '100%',
+    // Avoid height: '100%' — on web it clips descenders / tabular digits inside the field.
+    margin: 0,
+    padding: 0,
   },
   icon: { alignItems: 'center', justifyContent: 'center' },
 });

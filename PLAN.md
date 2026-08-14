@@ -90,9 +90,10 @@ change (a documented, deliberate cut for the timebox).
 **Visual identity (pastel redesign).** The palette is a pastel restaurant-SaaS register — lilac-gray
 canvas, periwinkle primary, soft status tints — but the semantic **structure is unchanged from the
 original blue theme**, so the intent behind every status/interactive token still holds; only the
-values moved. Brand face is **Plus Jakarta Sans** (geometric humanist sans; web-loaded via
-`+html.tsx`, system-ui/SF Pro fallback). KPIs use a big-number `stat`/`statSm` type variant with
-**tabular figures** so the headline metrics grab attention and stay column-aligned.
+values moved. Brand faces are a display/body pairing — **Instrument Serif** (display/KPIs/headings)
++ **Plus Jakarta Sans** (body/UI; web-loaded via `WebFonts` / `+html.tsx`). KPIs use a
+big-number `stat`/`statSm` type variant with **tabular figures** so the headline metrics grab
+attention and stay column-aligned.
 
 **Icons.** A single `Icon` primitive in `@odyssey/ui` (backed by `react-native-svg`, works web +
 native) renders illustrated line icons — **no emoji anywhere in the UI**. Geometry is Lucide

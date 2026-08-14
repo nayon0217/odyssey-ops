@@ -102,7 +102,7 @@ export default function UILibrary() {
         </ShowcaseRow>
       </Section>
 
-      <Section title="Typography" description="Plus Jakarta Sans, with size-specific tracking and leading.">
+      <Section title="Typography" description="Instrument Serif for display; Plus Jakarta Sans for body UI.">
         <Row gap="xl" align="baseline" wrap="wrap">
           <Text variant="stat">248</Text>
           <Text variant="statSm">$9,720</Text>

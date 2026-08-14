@@ -29,7 +29,7 @@ import {
 import type { OrderAction, ListOrders200Item, ListOrdersStatus } from '@odyssey/types';
 import { PageScaffold } from '../../components/PageScaffold';
 import { useOrdersPage, useOrderDetail, useNewOrder } from '../../hooks/use-orders-page';
-import { formatMoney, formatRelative } from '../../lib/format';
+import { formatMoney, formatRelative, normalizeYyyymmddInput, yyyymmddToIsoBound } from '../../lib/format';
 import {
   computeDraftTotalCents,
   isDraftValid,
@@ -58,8 +58,8 @@ export default function OrdersPage() {
     () => ({
       status: (statusFilter || undefined) as ListOrdersStatus | undefined,
       customerId: customerFilter || undefined,
-      from: fromDate ? `${fromDate}T00:00:00Z` : undefined,
-      to: toDate ? `${toDate}T23:59:59Z` : undefined,
+      from: yyyymmddToIsoBound(fromDate, 'start'),
+      to: yyyymmddToIsoBound(toDate, 'end'),
     }),
     [statusFilter, customerFilter, fromDate, toDate],
   );
@@ -148,10 +148,20 @@ export default function OrdersPage() {
           <Select value={customerFilter} onValueChange={setCustomerFilter} options={customerOptions} placeholder="Customer" />
         </View>
         <View style={styles.filterDate}>
-          <Input value={fromDate} onChangeText={setFromDate} placeholder="From (YYYY-MM-DD)" />
+          <Input
+            value={fromDate}
+            onChangeText={(v) => setFromDate(normalizeYyyymmddInput(v))}
+            placeholder="From (yyyymmdd)"
+            keyboardType="number-pad"
+          />
         </View>
         <View style={styles.filterDate}>
-          <Input value={toDate} onChangeText={setToDate} placeholder="To (YYYY-MM-DD)" />
+          <Input
+            value={toDate}
+            onChangeText={(v) => setToDate(normalizeYyyymmddInput(v))}
+            placeholder="To (yyyymmdd)"
+            keyboardType="number-pad"
+          />
         </View>
         {hasFilters ? (
           <Button
@@ -419,7 +429,7 @@ function NewOrderModal({ visible, onClose }: { visible: boolean; onClose: () => 
 const styles = StyleSheet.create({
   filters: { alignItems: 'center' },
   filterSelect: { width: 190 },
-  filterDate: { width: 170 },
+  filterDate: { width: 148 },
   loading: { padding: tokens.spacing['2xl'] },
   lineItem: { flex: 1 },
   lineQty: { width: 88 },
