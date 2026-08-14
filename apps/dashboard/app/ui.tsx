@@ -25,6 +25,8 @@ import {
   Table,
   type Column,
   Tabs,
+  SideNav,
+  TopBar,
   Skeleton,
   SkeletonText,
   EmptyState,
@@ -63,6 +65,7 @@ export default function UILibrary() {
   const [checked, setChecked] = useState(true);
   const [switchOn, setSwitchOn] = useState(true);
   const [tab, setTab] = useState('overview');
+  const [navKey, setNavKey] = useState('orders');
   const [modalOpen, setModalOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -77,7 +80,7 @@ export default function UILibrary() {
         </Text>
       </View>
 
-      <Section title="Color tokens" description="Semantic colors. Components reference these, never raw hex.">
+      <Section title="Color tokens" description="Pastel restaurant-SaaS palette (lilac-gray canvas, periwinkle primary). Components reference semantic tokens, never raw hex.">
         <Text variant="overline" color="secondary">Surface</Text>
         <ShowcaseRow>
           <Swatch color={tokens.colors.surface.base} label="base" />
@@ -100,9 +103,24 @@ export default function UILibrary() {
           <Swatch color={tokens.colors.status.info} label="info" />
           <Swatch color={tokens.colors.status.neutral} label="neutral" />
         </ShowcaseRow>
+        <Text variant="overline" color="secondary">Status soft</Text>
+        <ShowcaseRow>
+          <Swatch color={tokens.colors.statusSoft.success} label="success" />
+          <Swatch color={tokens.colors.statusSoft.warning} label="warning" />
+          <Swatch color={tokens.colors.statusSoft.danger} label="danger" />
+          <Swatch color={tokens.colors.statusSoft.info} label="info" />
+          <Swatch color={tokens.colors.statusSoft.neutral} label="neutral" />
+        </ShowcaseRow>
+        <Text variant="overline" color="secondary">KPI washes</Text>
+        <ShowcaseRow>
+          <Swatch color={tokens.colors.wash.lavender} label="lavender" />
+          <Swatch color={tokens.colors.wash.mint} label="mint" />
+          <Swatch color={tokens.colors.wash.peach} label="peach" />
+          <Swatch color={tokens.colors.wash.gold} label="gold" />
+        </ShowcaseRow>
       </Section>
 
-      <Section title="Typography" description="Instrument Serif for display; Plus Jakarta Sans for body UI.">
+      <Section title="Typography" description="Outfit for display; Plus Jakarta Sans for body UI.">
         <Row gap="xl" align="baseline" wrap="wrap">
           <Text variant="stat">248</Text>
           <Text variant="statSm">$9,720</Text>
@@ -154,6 +172,26 @@ export default function UILibrary() {
         </ShowcaseRow>
       </Section>
 
+      <Section title="Border widths" description="Border scale — hairline / thin / thick. Components use tokens.border, never raw px.">
+        <ShowcaseRow>
+          {(['hairline', 'thin', 'thick'] as const).map((k) => (
+            <Stack key={k} gap="xs" align="center">
+              <View
+                style={{
+                  width: 72,
+                  height: 48,
+                  backgroundColor: tokens.colors.surface.base,
+                  borderWidth: tokens.border[k],
+                  borderColor: tokens.colors.border.strong,
+                  borderRadius: tokens.radius.md,
+                }}
+              />
+              <Text variant="caption" color="secondary">{k} · {tokens.border[k]}px</Text>
+            </Stack>
+          ))}
+        </ShowcaseRow>
+      </Section>
+
       <Section title="Elevation" description="Shadow scale; bigger surfaces read as thicker.">
         <ShowcaseRow>
           {(['sm', 'md', 'lg'] as const).map((k) => (
@@ -162,6 +200,35 @@ export default function UILibrary() {
             </View>
           ))}
         </ShowcaseRow>
+      </Section>
+
+      <Section title="Layout constants" description="Shared shell rules — sidebar, top bar, content max width, gutter.">
+        <Stack gap="sm">
+          {(
+            [
+              { key: 'sidebarWidth', value: tokens.layout.sidebarWidth },
+              { key: 'topbarHeight', value: tokens.layout.topbarHeight },
+              { key: 'contentMaxWidth', value: tokens.layout.contentMaxWidth },
+              { key: 'gutter', value: tokens.layout.gutter },
+            ] as const
+          ).map(({ key, value }) => (
+            <Row key={key} gap="md" align="center">
+              <Text variant="label" style={styles.layoutKey}>{key}</Text>
+              <View style={styles.layoutTrack}>
+                <View
+                  style={{
+                    width: Math.min(value / 4, 280),
+                    height: 10,
+                    backgroundColor: tokens.colors.interactive.primary,
+                    borderRadius: tokens.radius.pill,
+                    opacity: 0.85,
+                  }}
+                />
+              </View>
+              <Text variant="caption" color="secondary">{value}px</Text>
+            </Row>
+          ))}
+        </Stack>
       </Section>
 
       <Section title="Buttons" description="Variants × sizes × states (hover on pointer, active on press).">
@@ -261,6 +328,38 @@ export default function UILibrary() {
         <Text variant="bodySm" color="secondary">Active tab: {tab}</Text>
       </Section>
 
+      <Section
+        title="Navigation"
+        description="SideNav + TopBar — the shell primitives used by the dashboard layout."
+      >
+        <View style={styles.navDemo}>
+          <SideNav
+            activeKey={navKey}
+            onSelect={setNavKey}
+            header={
+              <Text variant="title" color="primary">
+                Odyssey
+              </Text>
+            }
+            items={[
+              { key: 'home', label: 'Home', icon: <Icon name="home" size={18} /> },
+              { key: 'orders', label: 'Orders', icon: <Icon name="orders" size={18} /> },
+              { key: 'menu', label: 'Menu', icon: <Icon name="menu" size={18} /> },
+              { key: 'customers', label: 'Customers', icon: <Icon name="customers" size={18} /> },
+              { key: 'settings', label: 'Settings', icon: <Icon name="settings" size={18} /> },
+            ]}
+          />
+          <View style={styles.navDemoMain}>
+            <TopBar title="Orders" subtitle="Shell chrome" right={<Button label="Action" size="sm" onPress={() => {}} />} />
+            <View style={styles.navDemoBody}>
+              <Text variant="body" color="secondary">
+                Active: {navKey}
+              </Text>
+            </View>
+          </View>
+        </View>
+      </Section>
+
       <Section title="Table" description="Generic table with header, rows, loading, and empty states.">
         <Card padded={false}>
           <Table columns={DEMO_COLUMNS} data={DEMO_ROWS} keyExtractor={(r) => r.id} onRowPress={() => {}} />
@@ -310,10 +409,17 @@ export default function UILibrary() {
         <Callout tone="info" title="Heads up">An order older than an hour is always at least “ready”.</Callout>
       </Section>
 
-      <Section title="Grid" description="Responsive auto-wrapping layout primitive (layout/grid rules).">
+      <Section title="Grid" description="Responsive auto-wrapping layout primitive (layout/grid rules). Wash tones match Home KPIs.">
         <Grid minChildWidth={180} gap="md">
-          {['Total orders', 'Revenue', 'Pending', 'Popular'].map((label) => (
-            <Card key={label}>
+          {(
+            [
+              { label: 'Total orders', wash: 'lavender' as const },
+              { label: 'Revenue', wash: 'mint' as const },
+              { label: 'Pending', wash: 'peach' as const },
+              { label: 'Popular', wash: 'gold' as const },
+            ] as const
+          ).map(({ label, wash }) => (
+            <Card key={label} style={{ backgroundColor: tokens.colors.wash[wash] }}>
               <Text variant="overline" color="secondary">{label}</Text>
               <Text variant="h2">—</Text>
             </Card>
@@ -375,6 +481,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  layoutKey: { width: 140 },
+  layoutTrack: {
+    flex: 1,
+    maxWidth: 300,
+    height: 10,
+    backgroundColor: tokens.colors.surface.sunken,
+    borderRadius: tokens.radius.pill,
+    overflow: 'hidden',
+  },
   iconCell: { width: 74 },
   iconTile: {
     width: 48,
@@ -386,6 +501,17 @@ const styles = StyleSheet.create({
   },
   formGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: tokens.spacing.xl },
   formCol: { flex: 1, minWidth: 260, gap: tokens.spacing.md },
+  navDemo: {
+    flexDirection: 'row',
+    height: 280,
+    borderRadius: tokens.radius.lg,
+    borderWidth: tokens.border.hairline,
+    borderColor: tokens.colors.border.subtle,
+    overflow: 'hidden',
+    backgroundColor: tokens.colors.surface.raised,
+  },
+  navDemoMain: { flex: 1, minWidth: 0 },
+  navDemoBody: { padding: tokens.spacing.lg },
   stateBox: {
     width: 240,
     height: 200,

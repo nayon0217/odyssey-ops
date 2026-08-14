@@ -166,11 +166,11 @@ function StatCard({
         </View>
         <Stack gap="xs">
           {kind === 'number' ? (
-            <Text variant={value.length > 8 ? 'statSm' : 'stat'} style={styles.statValue}>
+            <Text variant="statSm" numberOfLines={1} style={styles.statValue}>
               {value}
             </Text>
           ) : (
-            <Text variant="h1" numberOfLines={2}>
+            <Text variant="h2" numberOfLines={1} style={styles.statValue}>
               {value}
             </Text>
           )}
@@ -203,5 +203,9 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   loading: { padding: tokens.spacing['2xl'] },
-  tableHeader: { padding: tokens.spacing.xl, paddingBottom: 0 },
+  tableHeader: {
+    paddingHorizontal: tokens.spacing.lg,
+    paddingTop: tokens.spacing.xl,
+    paddingBottom: tokens.spacing.sm,
+  },
 });

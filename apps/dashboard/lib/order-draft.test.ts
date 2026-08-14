@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { computeDraftTotalCents, isDraftValid, toOrderItems, type DraftLine } from './order-draft';
+import {
+  computeDraftTotalCents,
+  findCustomerByName,
+  isDraftValid,
+  toOrderItems,
+  type DraftLine,
+} from './order-draft';
 
 const prices = new Map([
   ['a', 500],
@@ -29,12 +35,13 @@ describe('computeDraftTotalCents', () => {
 });
 
 describe('isDraftValid', () => {
-  it('requires a customer and at least one complete line', () => {
+  it('requires a customer name and at least one complete line', () => {
     expect(isDraftValid('', [{ menuItemId: 'a', quantity: 1 }])).toBe(false);
-    expect(isDraftValid('c1', [])).toBe(false);
-    expect(isDraftValid('c1', [{ menuItemId: '', quantity: 1 }])).toBe(false);
-    expect(isDraftValid('c1', [{ menuItemId: 'a', quantity: 0 }])).toBe(false);
-    expect(isDraftValid('c1', [{ menuItemId: 'a', quantity: 1 }])).toBe(true);
+    expect(isDraftValid('  ', [{ menuItemId: 'a', quantity: 1 }])).toBe(false);
+    expect(isDraftValid('Ava', [])).toBe(false);
+    expect(isDraftValid('Ava', [{ menuItemId: '', quantity: 1 }])).toBe(false);
+    expect(isDraftValid('Ava', [{ menuItemId: 'a', quantity: 0 }])).toBe(false);
+    expect(isDraftValid('Ava', [{ menuItemId: 'a', quantity: 1 }])).toBe(true);
   });
 });
 
@@ -47,5 +54,22 @@ describe('toOrderItems', () => {
         { menuItemId: 'b', quantity: 0 },
       ]),
     ).toEqual([{ menuItemId: 'a', quantity: 1 }]);
+  });
+});
+
+describe('findCustomerByName', () => {
+  const customers = [
+    { id: '1', name: 'Ava Thompson' },
+    { id: '2', name: 'Liam Chen' },
+  ];
+
+  it('matches existing customers case-insensitively', () => {
+    expect(findCustomerByName(customers, '  ava thompson ')?.id).toBe('1');
+    expect(findCustomerByName(customers, 'LIAM CHEN')?.id).toBe('2');
+  });
+
+  it('returns undefined when no exact name match', () => {
+    expect(findCustomerByName(customers, 'Ava')).toBeUndefined();
+    expect(findCustomerByName(customers, '')).toBeUndefined();
   });
 });

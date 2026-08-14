@@ -4,6 +4,7 @@ import {
   canTransition,
   assertTransition,
   getAvailableActions,
+  getAvailableActionsForOrder,
   getAvailableTransitions,
   isTerminalStatus,
   effectiveOrderStatus,
@@ -75,9 +76,40 @@ describe('staleness invariant (preparing > 1h → ready)', () => {
     expect(effectiveOrderStatus('preparing', tenMinAgo)).toBe('preparing');
   });
 
-  it('never affects other statuses, even when old', () => {
+  it('does not day-collapse statuses that are only a few hours old', () => {
     expect(effectiveOrderStatus('accepted', twoHoursAgo)).toBe('accepted');
     expect(effectiveOrderStatus('pending', twoHoursAgo)).toBe('pending');
     expect(isStalePreparing('accepted', twoHoursAgo)).toBe(false);
+  });
+});
+
+describe('staleness invariant (order > 1 day → accepted | cancelled)', () => {
+  const twoDaysAgo = new Date(Date.now() - 2 * 24 * HOUR_MS).toISOString();
+  const twelveHoursAgo = new Date(Date.now() - 12 * HOUR_MS).toISOString();
+
+  it('collapses disallowed day-old statuses to accepted', () => {
+    expect(effectiveOrderStatus('pending', twoDaysAgo)).toBe('accepted');
+    expect(effectiveOrderStatus('preparing', twoDaysAgo)).toBe('accepted');
+    expect(effectiveOrderStatus('ready', twoDaysAgo)).toBe('accepted');
+    expect(effectiveOrderStatus('completed', twoDaysAgo)).toBe('accepted');
+  });
+
+  it('keeps accepted and cancelled on day-old orders', () => {
+    expect(effectiveOrderStatus('accepted', twoDaysAgo)).toBe('accepted');
+    expect(effectiveOrderStatus('cancelled', twoDaysAgo)).toBe('cancelled');
+  });
+
+  it('does not apply the day rule under 24h', () => {
+    expect(effectiveOrderStatus('accepted', twelveHoursAgo)).toBe('accepted');
+    expect(effectiveOrderStatus('ready', twelveHoursAgo)).toBe('ready');
+    expect(effectiveOrderStatus('completed', twelveHoursAgo)).toBe('completed');
+  });
+
+  it('limits day-old actions to those that stay accepted|cancelled', () => {
+    expect(getAvailableActionsForOrder('accepted', twoDaysAgo)).toEqual(['cancel']);
+    expect(getAvailableActionsForOrder('accepted', twelveHoursAgo).sort()).toEqual([
+      'cancel',
+      'start_preparing',
+    ]);
   });
 });

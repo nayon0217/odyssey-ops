@@ -30,28 +30,22 @@ export function formatRelative(iso: string | null | undefined): string {
   return `${days}d ago`;
 }
 
-/** Keep only digits, max 8 — for yyyymmdd filter fields. */
-export function normalizeYyyymmddInput(raw: string): string {
-  return raw.replace(/\D/g, '').slice(0, 8);
-}
-
 /**
- * Convert a complete yyyymmdd string to an ISO day bound for the orders API.
- * Incomplete / invalid values return undefined so the filter is ignored until valid.
+ * Convert a calendar `yyyy-MM-dd` value to an ISO day bound for the orders API.
+ * Empty / invalid values return undefined so the filter is ignored.
  */
-export function yyyymmddToIsoBound(
+export function dateInputToIsoBound(
   value: string,
   bound: 'start' | 'end',
 ): string | undefined {
-  if (!/^\d{8}$/.test(value)) return undefined;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return undefined;
   const year = Number(value.slice(0, 4));
-  const month = Number(value.slice(4, 6));
-  const day = Number(value.slice(6, 8));
+  const month = Number(value.slice(5, 7));
+  const day = Number(value.slice(8, 10));
   if (month < 1 || month > 12 || day < 1 || day > 31) return undefined;
-  const isoDate = `${value.slice(0, 4)}-${value.slice(4, 6)}-${value.slice(6, 8)}`;
-  const probe = new Date(`${isoDate}T00:00:00Z`);
+  const probe = new Date(`${value}T00:00:00Z`);
   if (Number.isNaN(probe.getTime())) return undefined;
-  // Reject rollover dates like 20240231 → Mar 2.
+  // Reject rollover dates like 2024-02-31 → Mar 2.
   if (
     probe.getUTCFullYear() !== year ||
     probe.getUTCMonth() + 1 !== month ||
@@ -59,5 +53,5 @@ export function yyyymmddToIsoBound(
   ) {
     return undefined;
   }
-  return bound === 'start' ? `${isoDate}T00:00:00Z` : `${isoDate}T23:59:59Z`;
+  return bound === 'start' ? `${value}T00:00:00Z` : `${value}T23:59:59Z`;
 }

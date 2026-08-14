@@ -1,6 +1,6 @@
 import { createRoute, z } from '@hono/zod-openapi';
 import { and, desc, eq, gte, lte, getTableColumns } from 'drizzle-orm';
-import { applyAction, getAvailableActions, InvalidTransitionError } from '@odyssey/shared';
+import { applyAction, getAvailableActions, getAvailableActionsForOrder, InvalidTransitionError, isDayStaleDisallowed } from '@odyssey/shared';
 import { createDb } from '../db/client';
 import { orders, customers, orderItems } from '../db/schema';
 import {
@@ -178,6 +178,15 @@ router.openapi(
 
     try {
       const nextStatus = applyAction(order.status, action);
+      // Validation: day-old orders may only land on accepted | cancelled.
+      if (isDayStaleDisallowed(nextStatus, order.createdAt)) {
+        return conflict(c, 'Orders older than one day must be accepted or cancelled', {
+          currentStatus: order.status,
+          action,
+          nextStatus,
+          availableActions: getAvailableActionsForOrder(order.status, order.createdAt),
+        });
+      }
       const [updated] = await db
         .update(orders)
         .set({ status: nextStatus, updatedAt: new Date().toISOString() })

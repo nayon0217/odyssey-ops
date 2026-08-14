@@ -67,6 +67,21 @@ export function getAvailableActions(status: OrderStatus): OrderAction[] {
   return Object.keys(ORDER_TRANSITIONS[status]) as OrderAction[];
 }
 
+/**
+ * Actions legal for a concrete order, after applying the day-staleness rule.
+ * Day-old orders may only move into accepted | cancelled (typically: cancel).
+ */
+export function getAvailableActionsForOrder(
+  status: OrderStatus,
+  placedAtIso: string,
+  now: number = Date.now(),
+): OrderAction[] {
+  return getAvailableActions(status).filter((action) => {
+    const next = getNextStatus(status, action);
+    return next != null && !isDayStaleDisallowed(next, placedAtIso, now);
+  });
+}
+
 /** Resulting statuses reachable from a given status. */
 export function getAvailableTransitions(status: OrderStatus): OrderStatus[] {
   return Object.values(ORDER_TRANSITIONS[status]) as OrderStatus[];
@@ -93,12 +108,16 @@ export function applyAction(current: OrderStatus, action: OrderAction): OrderSta
   return next;
 }
 
-// ── Staleness invariant ──────────────────────────────────────────────────────
-// An order placed more than an hour ago can never still be "preparing" — by then
-// it must be prepared (at least "ready"). This is the single source of that rule;
-// the backend enforces it in the DB (a sweep before order reads) and the frontend
-// applies it defensively on display.
+// ── Staleness invariants ─────────────────────────────────────────────────────
+// 1) Preparing > 1h → ready (kitchen can't still be cooking after an hour).
+// 2) Any order > 1 day old must be accepted or cancelled — mid-flow / ready /
+//    completed don't remain past a day in this ops model (seed + API sweep).
+// Single-sourced here; backend enforces via DB sweep before order reads; seed
+// applies the same helpers so initial data is consistent.
+
 export const PREP_STALE_MS = 60 * 60 * 1000;
+export const DAY_STALE_MS = 24 * 60 * 60 * 1000;
+export const DAY_STALE_ALLOWED = ['accepted', 'cancelled'] as const satisfies readonly OrderStatus[];
 
 export function isStalePreparing(
   status: OrderStatus,
@@ -108,11 +127,26 @@ export function isStalePreparing(
   return status === 'preparing' && now - new Date(placedAtIso).getTime() > PREP_STALE_MS;
 }
 
-/** The effective status once the staleness rule is applied ("preparing" > 1h → "ready"). */
+export function isDayStaleDisallowed(
+  status: OrderStatus,
+  placedAtIso: string,
+  now: number = Date.now(),
+): boolean {
+  if (now - new Date(placedAtIso).getTime() <= DAY_STALE_MS) return false;
+  return !(DAY_STALE_ALLOWED as readonly string[]).includes(status);
+}
+
+/** Effective status after both staleness rules. */
 export function effectiveOrderStatus(
   status: OrderStatus,
   placedAtIso: string,
   now: number = Date.now(),
 ): OrderStatus {
-  return isStalePreparing(status, placedAtIso, now) ? 'ready' : status;
+  let next: OrderStatus = isStalePreparing(status, placedAtIso, now) ? 'ready' : status;
+  if (isDayStaleDisallowed(next, placedAtIso, now)) {
+    // Collapse anything still open / ready / completed after a day to "accepted".
+    // "cancelled" is already allowed and never reaches here.
+    next = 'accepted';
+  }
+  return next;
 }

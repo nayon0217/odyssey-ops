@@ -24,14 +24,15 @@ import {
   ORDER_STATUSES,
   ORDER_STATUS_LABELS,
   ORDER_ACTION_LABELS,
-  getAvailableActions,
+  getAvailableActionsForOrder,
 } from '@odyssey/shared';
 import type { OrderAction, ListOrders200Item, ListOrdersStatus } from '@odyssey/types';
 import { PageScaffold } from '../../components/PageScaffold';
 import { useOrdersPage, useOrderDetail, useNewOrder } from '../../hooks/use-orders-page';
-import { formatMoney, formatRelative, normalizeYyyymmddInput, yyyymmddToIsoBound } from '../../lib/format';
+import { formatMoney, formatRelative, dateInputToIsoBound } from '../../lib/format';
 import {
   computeDraftTotalCents,
+  findCustomerByName,
   isDraftValid,
   toOrderItems,
   type DraftLine,
@@ -58,8 +59,8 @@ export default function OrdersPage() {
     () => ({
       status: (statusFilter || undefined) as ListOrdersStatus | undefined,
       customerId: customerFilter || undefined,
-      from: yyyymmddToIsoBound(fromDate, 'start'),
-      to: yyyymmddToIsoBound(toDate, 'end'),
+      from: dateInputToIsoBound(fromDate, 'start'),
+      to: dateInputToIsoBound(toDate, 'end'),
     }),
     [statusFilter, customerFilter, fromDate, toDate],
   );
@@ -148,20 +149,10 @@ export default function OrdersPage() {
           <Select value={customerFilter} onValueChange={setCustomerFilter} options={customerOptions} placeholder="Customer" />
         </View>
         <View style={styles.filterDate}>
-          <Input
-            value={fromDate}
-            onChangeText={(v) => setFromDate(normalizeYyyymmddInput(v))}
-            placeholder="From (yyyymmdd)"
-            keyboardType="number-pad"
-          />
+          <Input type="date" value={fromDate} onChangeText={setFromDate} placeholder="From" />
         </View>
         <View style={styles.filterDate}>
-          <Input
-            value={toDate}
-            onChangeText={(v) => setToDate(normalizeYyyymmddInput(v))}
-            placeholder="To (yyyymmdd)"
-            keyboardType="number-pad"
-          />
+          <Input type="date" value={toDate} onChangeText={setToDate} placeholder="To" />
         </View>
         {hasFilters ? (
           <Button
@@ -218,7 +209,7 @@ function OrderDetailDrawer({
   isTransitioning: boolean;
 }) {
   const { order, isLoading } = useOrderDetail(orderId);
-  const actions = order ? getAvailableActions(order.status) : [];
+  const actions = order ? getAvailableActionsForOrder(order.status, order.createdAt) : [];
 
   return (
     <Drawer
@@ -310,26 +301,30 @@ function OrderDetailDrawer({
 
 function NewOrderModal({ visible, onClose }: { visible: boolean; onClose: () => void }) {
   const toast = useToast();
-  const { customers, availableItems, createOrder } = useNewOrder();
-  const [customerId, setCustomerId] = useState('');
+  const { customers, availableItems, createCustomer, createOrder } = useNewOrder();
+  const [customerName, setCustomerName] = useState('');
   const [lines, setLines] = useState<DraftLine[]>([{ menuItemId: '', quantity: 1 }]);
   const [notes, setNotes] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   const priceById = useMemo(
     () => new Map(availableItems.map((item) => [item.id, item.priceCents])),
     [availableItems],
   );
+  const matchedCustomer = useMemo(
+    () => findCustomerByName(customers, customerName),
+    [customers, customerName],
+  );
   const totalCents = computeDraftTotalCents(lines, priceById);
-  const valid = isDraftValid(customerId, lines);
+  const valid = isDraftValid(customerName, lines);
 
   const itemOptions = availableItems.map((item) => ({
     label: `${item.name} · ${formatMoney(item.priceCents)}`,
     value: item.id,
   }));
-  const customerOptions = customers.map((customer) => ({ label: customer.name, value: customer.id }));
 
   function reset() {
-    setCustomerId('');
+    setCustomerName('');
     setLines([{ menuItemId: '', quantity: 1 }]);
     setNotes('');
   }
@@ -337,23 +332,36 @@ function NewOrderModal({ visible, onClose }: { visible: boolean; onClose: () => 
     setLines((ls) => ls.map((line, i) => (i === index ? { ...line, ...patch } : line)));
   }
 
-  function submit() {
-    createOrder.mutate(
-      { data: { customerId, items: toOrderItems(lines), notes: notes.trim() || undefined } },
-      {
-        onSuccess: () => {
-          toast.show({ title: 'Order placed', tone: 'success' });
-          reset();
-          onClose();
-        },
-        onError: (err) =>
-          toast.show({
-            title: 'Could not place order',
-            description: err instanceof Error ? err.message : undefined,
-            tone: 'error',
-          }),
-      },
-    );
+  async function submit() {
+    if (!valid || submitting) return;
+    setSubmitting(true);
+    try {
+      const name = customerName.trim();
+      let customerId = matchedCustomer?.id;
+      if (!customerId) {
+        const created = await createCustomer.mutateAsync({ data: { name } });
+        if (created.status !== 201) throw new Error('Could not create customer');
+        customerId = created.data.id;
+      }
+      await createOrder.mutateAsync({
+        data: { customerId, items: toOrderItems(lines), notes: notes.trim() || undefined },
+      });
+      toast.show({
+        title: 'Order placed',
+        description: matchedCustomer ? undefined : `Created customer “${name}”`,
+        tone: 'success',
+      });
+      reset();
+      onClose();
+    } catch (err) {
+      toast.show({
+        title: 'Could not place order',
+        description: err instanceof Error ? err.message : undefined,
+        tone: 'error',
+      });
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -365,18 +373,25 @@ function NewOrderModal({ visible, onClose }: { visible: boolean; onClose: () => 
       testID="new-order-modal"
       footer={
         <>
-          <Button label="Cancel" variant="secondary" onPress={onClose} />
-          <Button label="Place order" onPress={submit} disabled={!valid} loading={createOrder.isPending} />
+          <Button label="Cancel" variant="secondary" onPress={onClose} disabled={submitting} />
+          <Button label="Place order" onPress={submit} disabled={!valid} loading={submitting} />
         </>
       }
     >
       <Stack gap="md">
-        <Select
+        <Input
           label="Customer"
-          value={customerId}
-          onValueChange={setCustomerId}
-          options={customerOptions}
-          placeholder="Select a customer"
+          value={customerName}
+          onChangeText={setCustomerName}
+          placeholder="Customer name"
+          autoCapitalize="words"
+          helperText={
+            matchedCustomer
+              ? `Matches existing customer “${matchedCustomer.name}”`
+              : customerName.trim()
+                ? 'No match — a new customer will be created'
+                : 'Type a name to match an existing customer or create a new one'
+          }
         />
         <Stack gap="sm">
           <Text variant="label">Items</Text>
@@ -429,8 +444,8 @@ function NewOrderModal({ visible, onClose }: { visible: boolean; onClose: () => 
 const styles = StyleSheet.create({
   filters: { alignItems: 'center' },
   filterSelect: { width: 190 },
-  filterDate: { width: 148 },
+  filterDate: { width: 176 },
   loading: { padding: tokens.spacing['2xl'] },
-  lineItem: { flex: 1 },
-  lineQty: { width: 88 },
+  lineItem: { flex: 1, minWidth: 0 },
+  lineQty: { width: 88, flexShrink: 0 },
 });

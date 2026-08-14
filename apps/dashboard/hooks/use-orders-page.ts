@@ -6,6 +6,7 @@ import {
   useListCustomers,
   useListMenuItems,
   useCreateOrder,
+  useCreateCustomer,
 } from '@odyssey/api-client';
 import type { ListOrdersParams, GetOrder200 } from '@odyssey/types';
 
@@ -40,16 +41,18 @@ export function useOrdersPage(params: ListOrdersParams) {
   };
 }
 
-/** Data + mutation for the "new order" flow: customers, orderable items, and create. */
+/** Data + mutation for the "new order" flow: customers, orderable items, create customer/order. */
 export function useNewOrder() {
   const invalidate = useInvalidateOrderData();
   const customersQuery = useListCustomers();
   const itemsQuery = useListMenuItems();
+  const createCustomer = useCreateCustomer({ mutation: { onSuccess: invalidate } });
   const createOrder = useCreateOrder({ mutation: { onSuccess: invalidate } });
 
   return {
     customers: customersQuery.data?.data ?? [],
     availableItems: (itemsQuery.data?.data ?? []).filter((item) => item.isAvailable),
+    createCustomer,
     createOrder,
   };
 }

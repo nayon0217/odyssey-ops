@@ -1,11 +1,11 @@
 import type { TextStyle } from 'react-native';
 
 // Type pairing for the pastel ops console:
-// - Instrument Serif: display / KPIs / page headings (geometric serif)
-// - Plus Jakarta Sans: body / UI chrome (clean geometric humanist sans)
+// - Outfit: display / KPIs / page headings (clean geometric sans)
+// - Plus Jakarta Sans: body / UI chrome (geometric humanist sans)
 // Loaded on web via WebFonts / +html.tsx.
 const fontFamily = {
-  display: "'Instrument Serif', Georgia, 'Times New Roman', serif",
+  display: "'Outfit', 'SF Pro Text', -apple-system, system-ui, 'Segoe UI', sans-serif",
   base: "'Plus Jakarta Sans', 'SF Pro Text', -apple-system, system-ui, 'Segoe UI', sans-serif",
   mono: "'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace",
 } as const;

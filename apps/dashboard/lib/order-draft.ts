@@ -14,10 +14,10 @@ export function computeDraftTotalCents(
   );
 }
 
-/** A draft is submittable when it has a customer and at least one complete line. */
-export function isDraftValid(customerId: string, lines: DraftLine[]): boolean {
+/** A draft is submittable when it has a customer name and at least one complete line. */
+export function isDraftValid(customerName: string, lines: DraftLine[]): boolean {
   return (
-    Boolean(customerId) &&
+    Boolean(customerName.trim()) &&
     lines.length > 0 &&
     lines.every((line) => Boolean(line.menuItemId) && line.quantity > 0)
   );
@@ -26,4 +26,14 @@ export function isDraftValid(customerId: string, lines: DraftLine[]): boolean {
 /** Drop incomplete lines before sending to the API. */
 export function toOrderItems(lines: DraftLine[]): DraftLine[] {
   return lines.filter((line) => Boolean(line.menuItemId) && line.quantity > 0);
+}
+
+/** Case-insensitive exact name match against known customers. */
+export function findCustomerByName<T extends { id: string; name: string }>(
+  customers: T[],
+  rawName: string,
+): T | undefined {
+  const needle = rawName.trim().toLowerCase();
+  if (!needle) return undefined;
+  return customers.find((c) => c.name.trim().toLowerCase() === needle);
 }

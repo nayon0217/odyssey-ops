@@ -179,6 +179,8 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
+    width: '100%',
+    height: '100%',
     alignItems: 'center',
     justifyContent: 'center',
     padding: tokens.spacing.xl,
@@ -188,12 +190,15 @@ const styles = StyleSheet.create({
   panelWrap: {
     width: '100%',
     maxHeight: '85%',
+    alignSelf: 'center',
   },
   panel: {
     backgroundColor: tokens.colors.surface.base,
     borderRadius: tokens.radius.lg,
     padding: tokens.spacing.xl,
     maxHeight: '100%',
+    width: '100%',
+    overflow: 'hidden',
     ...tokens.shadow.lg,
   },
   header: {
@@ -203,9 +208,9 @@ const styles = StyleSheet.create({
     gap: tokens.spacing.md,
     marginBottom: tokens.spacing.lg,
   },
-  headerTitle: { flex: 1 },
-  body: { flexShrink: 1 },
-  bodyContent: { flexGrow: 1 },
+  headerTitle: { flex: 1, minWidth: 0 },
+  body: { flexShrink: 1, width: '100%' },
+  bodyContent: { flexGrow: 1, width: '100%' },
   footer: { marginTop: tokens.spacing.xl },
   closeButton: {
     width: 28,

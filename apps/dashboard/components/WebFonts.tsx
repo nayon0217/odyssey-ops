@@ -3,7 +3,7 @@ import { Platform } from 'react-native';
 
 const FONT_STYLESHEET_ID = 'ody-google-fonts';
 const FONT_HREF =
-  'https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap';
+  'https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap';
 
 /**
  * Expo web with `output: "single"` serves a default HTML shell and does not apply

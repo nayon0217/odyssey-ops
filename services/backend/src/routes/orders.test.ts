@@ -130,4 +130,48 @@ describe('staleness invariant', () => {
     const found = list.find((o) => o.id === stale!.id);
     expect(found?.status).toBe('ready');
   });
+
+  it('normalizes a >1-day-old non-accepted/cancelled order to "accepted" on read', async () => {
+    const twoDaysAgo = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString();
+    const [stale] = await db
+      .insert(orders)
+      .values({
+        customerId,
+        status: 'ready',
+        totalCents: 500,
+        createdAt: twoDaysAgo,
+        updatedAt: twoDaysAgo,
+      })
+      .returning();
+    createdOrderIds.push(stale!.id);
+
+    const res = await app.request('/orders', {}, env);
+    const list = (await res.json()) as { id: string; status: string }[];
+    const found = list.find((o) => o.id === stale!.id);
+    expect(found?.status).toBe('accepted');
+  });
+
+  it('rejects advancing a >1-day-old order into a disallowed status', async () => {
+    const twoDaysAgo = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString();
+    const [stale] = await db
+      .insert(orders)
+      .values({
+        customerId,
+        status: 'accepted',
+        totalCents: 500,
+        createdAt: twoDaysAgo,
+        updatedAt: twoDaysAgo,
+      })
+      .returning();
+    createdOrderIds.push(stale!.id);
+
+    const bad = await post(`/orders/${stale!.id}/transition`, { action: 'start_preparing' });
+    expect(bad.status).toBe(409);
+    const body = (await bad.json()) as { error: { message?: string } };
+    expect(body.error.message?.toLowerCase()).toMatch(/day|stale|accepted|cancelled/);
+
+    const ok = await post(`/orders/${stale!.id}/transition`, { action: 'cancel' });
+    expect(ok.status).toBe(200);
+    expect(((await ok.json()) as { status: string }).status).toBe('cancelled');
+  });
 });

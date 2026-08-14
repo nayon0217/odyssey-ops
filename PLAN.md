@@ -58,25 +58,31 @@ instance, no server needed) → Orval regenerates `packages/api-client/src/gener
 ## Order status state machine (enforced server-side)
 
 ```
-pending  ─▶ accepted | rejected
-accepted ─▶ preparing | cancelled
-preparing ─▶ ready
-ready    ─▶ completed
-terminal: completed, cancelled, rejected
+pending   ─▶ accepted | cancelled
+accepted  ─▶ preparing | cancelled
+preparing ─▶ ready | cancelled
+ready     ─▶ completed
+terminal: completed, cancelled
 ```
 
 The transition map lives once in `packages/shared` and is enforced by the backend order service.
-The dashboard renders action buttons from the allowed transitions the API reports — it never
-hardcodes them.
+The dashboard renders action buttons from `getAvailableActionsForOrder` (state machine + day-staleness)
+— it never hardcodes them.
 
 ## Order staleness invariant
 
-An order placed **more than an hour ago can never still be "preparing"** — by then it must be
-prepared (at least "ready"). The rule is single-sourced in `packages/shared`
-(`effectiveOrderStatus` / `isStalePreparing`, threshold `PREP_STALE_MS`). The backend enforces it
-as **data truth** via `sweepStalePreparingOrders`, run before every order read (list, detail, home
-summary, customer detail) so the stored status and every API response agree — a status filter and a
-returned status can never disagree. The seed applies the same rule so initial data is consistent.
+Two rules, single-sourced in `packages/shared` (`effectiveOrderStatus`):
+
+1. An order placed **more than an hour ago can never still be "preparing"** — by then it
+   must be at least "ready" (`PREP_STALE_MS`).
+2. An order placed **more than a day ago must be "accepted" or "cancelled"** — any other
+   status collapses to "accepted" (`DAY_STALE_MS`).
+
+The backend enforces both as **data truth** via `sweepStalePreparingOrders`, run before
+every order read (list, detail, home summary, customer detail) so the stored status and
+every API response agree. Transitions that would leave a day-old order outside
+accepted|cancelled are rejected with `409`. The seed applies the same rules and
+**asserts** the invariant before finishing.
 
 ## Styling decision
 
@@ -90,7 +96,7 @@ change (a documented, deliberate cut for the timebox).
 **Visual identity (pastel redesign).** The palette is a pastel restaurant-SaaS register — lilac-gray
 canvas, periwinkle primary, soft status tints — but the semantic **structure is unchanged from the
 original blue theme**, so the intent behind every status/interactive token still holds; only the
-values moved. Brand faces are a display/body pairing — **Instrument Serif** (display/KPIs/headings)
+values moved. Brand faces are a display/body pairing — **Outfit** (display/KPIs/headings)
 + **Plus Jakarta Sans** (body/UI; web-loaded via `WebFonts` / `+html.tsx`). KPIs use a
 big-number `stat`/`statSm` type variant with **tabular figures** so the headline metrics grab
 attention and stay column-aligned.
@@ -118,7 +124,8 @@ native — behind the `Icon` primitive; the only rendering dependency added for 
 ## How AI is being used on this project
 
 - This guardrail doc is the steering context handed to the model each session.
-- Work proceeds in verifiable phases (Phase 0 = foundation; each step ends with a check that passes
-  before the next begins) rather than one big generation.
+- Work proceeds in verifiable phases (see git: Phase 0 → 6, then gap-close / redesign commits)
+  — each step ends with a check that passes before the next begins.
 - Generated artifacts are trusted only after the pipeline is proven end-to-end against a real DB.
 - Output is reviewed against the "Never do this" list; the contract discipline is the point.
+- Longer architecture / tradeoff notes for reviewers live in `README.md`.

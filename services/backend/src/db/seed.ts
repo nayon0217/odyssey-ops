@@ -1,5 +1,12 @@
 import { sql } from 'drizzle-orm';
-import { ORDER_STATUSES, effectiveOrderStatus, type OrderStatus } from '@odyssey/shared';
+import {
+  DAY_STALE_ALLOWED,
+  DAY_STALE_MS,
+  ORDER_STATUSES,
+  effectiveOrderStatus,
+  isDayStaleDisallowed,
+  type OrderStatus,
+} from '@odyssey/shared';
 import { createDb } from './client';
 import { menuCategories, menuItems, customers, orders, orderItems, settings } from './schema';
 
@@ -85,10 +92,16 @@ async function main() {
   console.log('Seeding 62 orders across all statuses and ~30 days…');
   for (let i = 0; i < 62; i++) {
     const customer = customerRows[i % customerRows.length]!;
-    const rawStatus = ORDER_STATUSES[i % ORDER_STATUSES.length]!;
     const createdAt = new Date(Date.now() - i * 12 * 60 * 60 * 1000).toISOString();
-    // Honor the invariant at seed time: a >1h-old "preparing" order is already "ready".
-    const status = effectiveOrderStatus(rawStatus, createdAt);
+    const ageMs = Date.now() - new Date(createdAt).getTime();
+    // >1 day old → only accepted | cancelled. Fresher rows cycle the full status set
+    // (then honor the preparing>1h → ready rule via effectiveOrderStatus).
+    const status: OrderStatus =
+      ageMs > DAY_STALE_MS
+        ? i % 2 === 0
+          ? 'accepted'
+          : 'cancelled'
+        : effectiveOrderStatus(ORDER_STATUSES[i % ORDER_STATUSES.length]!, createdAt);
 
     // 1–3 available items, quantity 1–2 each.
     const lineCount = 1 + (i % 3);
@@ -152,6 +165,21 @@ async function main() {
   console.log(
     `Done: ${cats.length} categories, ${items.length} items, ${customerRows.length} customers, ${62 + recent.length} orders.`,
   );
+
+  // Validation step: every seeded order must satisfy the day-staleness invariant.
+  const seeded = await db.select({ status: orders.status, createdAt: orders.createdAt, orderNumber: orders.orderNumber }).from(orders);
+  const violations = seeded.filter((row) => isDayStaleDisallowed(row.status, row.createdAt));
+  if (violations.length > 0) {
+    const sample = violations
+      .slice(0, 5)
+      .map((v) => `#${v.orderNumber} ${v.status}`)
+      .join(', ');
+    throw new Error(
+      `Seed violated day-staleness invariant (>1 day must be ${DAY_STALE_ALLOWED.join('|')}): ${violations.length} row(s), e.g. ${sample}`,
+    );
+  }
+  console.log(`Validated: all ${seeded.length} orders satisfy day-staleness (${DAY_STALE_ALLOWED.join('|')} when >1 day).`);
+
   process.exit(0);
 }
 

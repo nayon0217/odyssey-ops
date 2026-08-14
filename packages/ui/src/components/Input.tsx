@@ -1,5 +1,4 @@
-import type { ReactNode } from 'react';
-import { useState } from 'react';
+import { createElement, useState, type ChangeEvent, type CSSProperties, type ReactNode } from 'react';
 import { TextInput, View, StyleSheet, Platform, type TextInputProps, type ViewStyle } from 'react-native';
 import { tokens } from '../tokens';
 import { FormField } from './FormField';
@@ -13,6 +12,8 @@ export type InputProps = {
   errorText?: string;
   disabled?: boolean;
   secureTextEntry?: boolean;
+  /** On web, `date` renders a native calendar picker (RN-web TextInput cannot). */
+  type?: 'text' | 'date' | 'email' | 'number' | 'password' | 'tel' | 'url' | 'search';
   keyboardType?: TextInputProps['keyboardType'];
   autoCapitalize?: TextInputProps['autoCapitalize'];
   leftIcon?: ReactNode;
@@ -34,6 +35,26 @@ function webNoOutline(): ViewStyle | null {
   return Platform.OS === 'web' ? ({ outlineStyle: 'none' } as unknown as ViewStyle) : null;
 }
 
+function webDateFieldStyle(color: string): CSSProperties {
+  const body = tokens.textVariants.body;
+  return {
+    flex: 1,
+    minWidth: 0,
+    width: '100%',
+    margin: 0,
+    padding: 0,
+    border: 'none',
+    backgroundColor: 'transparent',
+    outline: 'none',
+    color,
+    fontFamily: body.fontFamily,
+    fontSize: body.fontSize,
+    fontWeight: body.fontWeight as CSSProperties['fontWeight'],
+    lineHeight: `${body.lineHeight}px`,
+    letterSpacing: body.letterSpacing,
+  };
+}
+
 export function Input({
   value,
   onChangeText,
@@ -43,6 +64,7 @@ export function Input({
   errorText,
   disabled = false,
   secureTextEntry = false,
+  type = 'text',
   keyboardType,
   autoCapitalize,
   leftIcon,
@@ -61,19 +83,26 @@ export function Input({
         ? tokens.colors.border.focus
         : tokens.colors.border.default;
 
-  return (
-    <FormField label={label} helperText={helperText} errorText={errorText}>
-      <View
-        style={[
-          styles.container,
-          {
-            borderColor,
-            backgroundColor: disabled ? tokens.colors.surface.sunken : tokens.colors.surface.base,
-          },
-          focused && !disabled ? focusRingStyle() : null,
-        ]}
-      >
-        {leftIcon ? <View style={styles.icon}>{leftIcon}</View> : null}
+  const textColor = disabled ? tokens.colors.text.muted : tokens.colors.text.primary;
+  // RN-web TextInput derives DOM `type` from keyboardType/secureTextEntry and overwrites
+  // any passed `type` prop — so date must be a real HTML <input>.
+  const useNativeDate = Platform.OS === 'web' && type === 'date';
+
+  const field = useNativeDate
+    ? createElement('input', {
+        type: 'date',
+        value,
+        disabled,
+        placeholder,
+        max: '9999-12-31',
+        'aria-label': label ?? placeholder,
+        'data-testid': testID,
+        onChange: (e: ChangeEvent<HTMLInputElement>) => onChangeText(e.target.value),
+        onFocus: () => setFocused(true),
+        onBlur: () => setFocused(false),
+        style: webDateFieldStyle(textColor),
+      })
+    : (
         <TextInput
           testID={testID}
           value={value}
@@ -91,10 +120,26 @@ export function Input({
           style={[
             styles.input,
             tokens.textVariants.body,
-            { color: disabled ? tokens.colors.text.muted : tokens.colors.text.primary },
+            { color: textColor },
             webNoOutline(),
           ]}
         />
+      );
+
+  return (
+    <FormField label={label} helperText={helperText} errorText={errorText}>
+      <View
+        style={[
+          styles.container,
+          {
+            borderColor,
+            backgroundColor: disabled ? tokens.colors.surface.sunken : tokens.colors.surface.base,
+          },
+          focused && !disabled ? focusRingStyle() : null,
+        ]}
+      >
+        {leftIcon ? <View style={styles.icon}>{leftIcon}</View> : null}
+        {field}
         {rightIcon ? <View style={styles.icon}>{rightIcon}</View> : null}
       </View>
     </FormField>
