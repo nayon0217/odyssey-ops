@@ -32,7 +32,7 @@ router.openapi(
       .select()
       .from(menuItems)
       .where(categoryId ? eq(menuItems.categoryId, categoryId) : undefined)
-      .orderBy(menuItems.sortOrder);
+      .orderBy(menuItems.categoryId, menuItems.sortOrder, menuItems.name, menuItems.id);
     return c.json(rows, 200);
   },
 );

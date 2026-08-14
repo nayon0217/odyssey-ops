@@ -48,7 +48,7 @@ Open **http://localhost:8082**. The design-system reference lives at **/ui**.
 
 ## Seed data
 
-`pnpm db:seed` truncates and repopulates: **4 categories, 16 menu items, 20 customers, and 60
+`pnpm db:seed` truncates and repopulates: **4 categories, 16 menu items, 20 customers, and 68
 orders** spread across the last ~30 days and every status. Re-runnable at any time.
 
 ## Scripts

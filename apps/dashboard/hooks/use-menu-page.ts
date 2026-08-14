@@ -6,11 +6,24 @@ import {
   useCreateMenuItem,
   useUpdateMenuItem,
   useCreateMenuCategory,
+  getListMenuItemsQueryKey,
 } from '@odyssey/api-client';
 import type { ListMenuItems200Item, ListMenuCategories200Item } from '@odyssey/types';
 
 export type MenuItem = ListMenuItems200Item;
 export type MenuCategory = ListMenuCategories200Item;
+
+type MenuItemsCache = { status: number; data: MenuItem[]; headers: Headers };
+
+/** Stable display order: category grouping → sortOrder → name → id. */
+function compareMenuItems(a: MenuItem, b: MenuItem): number {
+  return (
+    a.categoryId.localeCompare(b.categoryId) ||
+    a.sortOrder - b.sortOrder ||
+    a.name.localeCompare(b.name) ||
+    a.id.localeCompare(b.id)
+  );
+}
 
 /**
  * Orchestrates the Menu page: fetches categories + items via generated hooks, groups
@@ -31,7 +44,10 @@ export function useMenuPage() {
   const createCategory = useCreateMenuCategory({ mutation: { onSuccess: invalidateCategories } });
 
   const categories = categoriesQuery.data?.data ?? [];
-  const items = itemsQuery.data?.data ?? [];
+  const items = useMemo(() => {
+    const raw = itemsQuery.data?.data ?? [];
+    return [...raw].sort(compareMenuItems);
+  }, [itemsQuery.data?.data]);
 
   const categoriesById = useMemo(
     () => new Map(categories.map((c) => [c.id, c])),
@@ -62,7 +78,29 @@ export function useMenuPage() {
     createItem,
     updateItem,
     createCategory,
-    toggleAvailability: (item: MenuItem) =>
-      updateItem.mutate({ id: item.id, data: { isAvailable: !item.isAvailable } }),
+    toggleAvailability: (item: MenuItem) => {
+      const nextAvailable = !item.isAvailable;
+      const queryKey = getListMenuItemsQueryKey();
+      const previous = queryClient.getQueryData<MenuItemsCache>(queryKey);
+
+      // Flip in place first so the row stays put; refetch uses a stable sort.
+      if (previous?.data) {
+        queryClient.setQueryData<MenuItemsCache>(queryKey, {
+          ...previous,
+          data: previous.data.map((row) =>
+            row.id === item.id ? { ...row, isAvailable: nextAvailable } : row,
+          ),
+        });
+      }
+
+      updateItem.mutate(
+        { id: item.id, data: { isAvailable: nextAvailable } },
+        {
+          onError: () => {
+            if (previous) queryClient.setQueryData(queryKey, previous);
+          },
+        },
+      );
+    },
   };
 }

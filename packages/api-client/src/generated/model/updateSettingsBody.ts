@@ -9,11 +9,13 @@
 export type UpdateSettingsBody = {
   /**
    * @minimum 0
-   * @maximum 2147483647
+   * @maximum 480
    */
   prepTimeMinutes?: number;
   autoAccept?: boolean;
   isAcceptingOrders?: boolean;
+  /** @pattern ^([01]\d|2[0-3]):([0-5]\d)$ */
   openingTime?: string;
+  /** @pattern ^([01]\d|2[0-3]):([0-5]\d)$ */
   closingTime?: string;
 };

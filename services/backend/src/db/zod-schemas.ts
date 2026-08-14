@@ -48,12 +48,32 @@ export const orderWithItemsSchema = orderSelectSchema.extend({
 });
 
 // ── Settings ──────────────────────────────────────────────────────────────
+const timeHHMM = z
+  .string()
+  .regex(/^([01]\d|2[0-3]):([0-5]\d)$/, 'Use 24-hour time HH:mm (e.g. 09:00)');
+
 export const settingsSelectSchema = createSelectSchema(settings);
 export const settingsUpdateSchema = createInsertSchema(settings, {
-  prepTimeMinutes: (schema) => schema.int().nonnegative(),
+  prepTimeMinutes: (schema) => schema.int().min(0).max(480),
+  openingTime: () => timeHHMM,
+  closingTime: () => timeHHMM,
 })
   .omit({ id: true, updatedAt: true })
-  .partial();
+  .partial()
+  .superRefine((value, ctx) => {
+    if (value.openingTime === undefined || value.closingTime === undefined) return;
+    const [oh, om] = value.openingTime.split(':').map(Number);
+    const [ch, cm] = value.closingTime.split(':').map(Number);
+    const open = oh! * 60 + om!;
+    const close = ch! * 60 + cm!;
+    if (close <= open) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['closingTime'],
+        message: 'Closing time must be after opening time',
+      });
+    }
+  });
 
 // ── Request bodies (not directly table-derived) ──────────────────────────────
 export const createOrderSchema = z.object({

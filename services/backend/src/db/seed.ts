@@ -82,8 +82,8 @@ async function main() {
   console.log('Seeding settings…');
   await db.insert(settings).values({});
 
-  console.log('Seeding 60 orders across all statuses and ~30 days…');
-  for (let i = 0; i < 60; i++) {
+  console.log('Seeding 62 orders across all statuses and ~30 days…');
+  for (let i = 0; i < 62; i++) {
     const customer = customerRows[i % customerRows.length]!;
     const rawStatus = ORDER_STATUSES[i % ORDER_STATUSES.length]!;
     const createdAt = new Date(Date.now() - i * 12 * 60 * 60 * 1000).toISOString();
@@ -150,7 +150,7 @@ async function main() {
   }
 
   console.log(
-    `Done: ${cats.length} categories, ${items.length} items, ${customerRows.length} customers, ${60 + recent.length} orders.`,
+    `Done: ${cats.length} categories, ${items.length} items, ${customerRows.length} customers, ${62 + recent.length} orders.`,
   );
   process.exit(0);
 }

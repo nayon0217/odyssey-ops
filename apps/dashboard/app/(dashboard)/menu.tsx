@@ -20,10 +20,15 @@ import {
   tokens,
   type Column,
 } from '@odyssey/ui';
-import { parseMoneyToCents } from '@odyssey/shared';
 import { PageScaffold } from '../../components/PageScaffold';
 import { useMenuPage, type MenuItem } from '../../hooks/use-menu-page';
 import { formatMoney } from '../../lib/format';
+import {
+  parsePriceInput,
+  validateCategoryName,
+  validateMenuItemForm,
+  type MenuItemFormErrors,
+} from '../../lib/form-validation';
 
 type FormState = { name: string; description: string; price: string; categoryId: string; isAvailable: boolean };
 const EMPTY_FORM: FormState = { name: '', description: '', price: '', categoryId: '', isAvailable: true };
@@ -36,19 +41,22 @@ export default function MenuPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<MenuItem | null>(null);
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
-  const [nameError, setNameError] = useState<string>();
+  const [formErrors, setFormErrors] = useState<MenuItemFormErrors>({});
   const [categoryOpen, setCategoryOpen] = useState(false);
   const [categoryName, setCategoryName] = useState('');
+  const [categoryError, setCategoryError] = useState<string>();
 
   function saveCategory() {
-    const name = categoryName.trim();
-    if (!name) return;
+    const error = validateCategoryName(categoryName);
+    setCategoryError(error);
+    if (error) return;
     page.createCategory.mutate(
-      { data: { name } },
+      { data: { name: categoryName.trim() } },
       {
         onSuccess: () => {
           setCategoryOpen(false);
           setCategoryName('');
+          setCategoryError(undefined);
           toast.show({ title: 'Category created', tone: 'success' });
         },
         onError: () => toast.show({ title: 'Could not create category', tone: 'error' }),
@@ -69,7 +77,7 @@ export default function MenuPage() {
   function openCreate() {
     setEditing(null);
     setForm({ ...EMPTY_FORM, categoryId: page.categories[0]?.id ?? '' });
-    setNameError(undefined);
+    setFormErrors({});
     setModalOpen(true);
   }
 
@@ -82,19 +90,22 @@ export default function MenuPage() {
       categoryId: item.categoryId,
       isAvailable: item.isAvailable,
     });
-    setNameError(undefined);
+    setFormErrors({});
     setModalOpen(true);
   }
 
   function save() {
-    if (!form.name.trim()) {
-      setNameError('Name is required');
-      return;
-    }
+    const nextErrors = validateMenuItemForm(form);
+    setFormErrors(nextErrors);
+    if (Object.keys(nextErrors).length > 0) return;
+
+    const price = parsePriceInput(form.price);
+    if ('error' in price) return;
+
     const data = {
       name: form.name.trim(),
       description: form.description.trim() || undefined,
-      priceCents: parseMoneyToCents(form.price),
+      priceCents: price.cents,
       categoryId: form.categoryId,
       isAvailable: form.isAvailable,
     };
@@ -189,8 +200,12 @@ export default function MenuPage() {
           <Input
             label="Category name"
             value={categoryName}
-            onChangeText={setCategoryName}
+            onChangeText={(v) => {
+              setCategoryName(v);
+              setCategoryError(undefined);
+            }}
             placeholder="e.g. Specials"
+            errorText={categoryError}
           />
         </Modal>
         <Modal
@@ -213,9 +228,12 @@ export default function MenuPage() {
             <Input
               label="Name"
               value={form.name}
-              onChangeText={(name) => setForm((f) => ({ ...f, name }))}
+              onChangeText={(name) => {
+                setForm((f) => ({ ...f, name }));
+                setFormErrors((e) => ({ ...e, name: undefined }));
+              }}
               placeholder="e.g. Margherita Pizza"
-              errorText={nameError}
+              errorText={formErrors.name}
             />
             <Textarea
               label="Description"
@@ -229,18 +247,26 @@ export default function MenuPage() {
                 <Input
                   label="Price (USD)"
                   value={form.price}
-                  onChangeText={(price) => setForm((f) => ({ ...f, price }))}
+                  onChangeText={(price) => {
+                    setForm((f) => ({ ...f, price }));
+                    setFormErrors((e) => ({ ...e, price: undefined }));
+                  }}
                   placeholder="0.00"
                   keyboardType="decimal-pad"
+                  errorText={formErrors.price}
                 />
               </View>
               <View style={styles.flex}>
                 <Select
                   label="Category"
                   value={form.categoryId}
-                  onValueChange={(categoryId) => setForm((f) => ({ ...f, categoryId }))}
+                  onValueChange={(categoryId) => {
+                    setForm((f) => ({ ...f, categoryId }));
+                    setFormErrors((e) => ({ ...e, categoryId: undefined }));
+                  }}
                   options={page.categories.map((c) => ({ label: c.name, value: c.id }))}
                   placeholder="Select"
+                  errorText={formErrors.categoryId}
                 />
               </View>
             </Row>
