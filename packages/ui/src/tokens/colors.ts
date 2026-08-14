@@ -1,37 +1,41 @@
 // Color tokens. Components reference the SEMANTIC groups (surface/text/border/…),
-// never the raw palette directly. One light theme, crafted for a clean restaurant-SaaS
-// feel (Ody-inspired). Dark mode is a documented, deliberate cut for the timebox.
+// never the raw palette directly. One light theme — a pastel restaurant-SaaS palette
+// (lilac-gray canvas, periwinkle primary, soft status tints). The semantic STRUCTURE is
+// unchanged from the original blue theme, so the intent behind every token still holds;
+// only the values moved to a softer, more pastel register. Dark mode remains a
+// documented, deliberate cut for the timebox.
 
 const palette = {
   white: '#ffffff',
-  black: '#0b1120',
-  slate50: '#f8fafc',
-  slate100: '#f1f5f9',
-  slate200: '#e2e8f0',
-  slate300: '#cbd5e1',
-  slate400: '#94a3b8',
-  slate500: '#64748b',
-  slate600: '#475569',
-  slate700: '#334155',
-  slate800: '#1e293b',
-  slate900: '#0f172a',
-  blue50: '#eff6ff',
-  blue500: '#3b82f6',
-  blue600: '#2563eb',
-  blue700: '#1d4ed8',
-  blue800: '#1e40af',
-  green50: '#ecfdf5',
-  green500: '#22c55e',
-  green600: '#16a34a',
-  green700: '#15803d',
-  amber50: '#fffbeb',
-  amber500: '#f59e0b',
-  amber600: '#d97706',
-  red50: '#fef2f2',
-  red500: '#ef4444',
-  red600: '#dc2626',
-  red700: '#b91c1c',
-  violet500: '#8b5cf6',
+  black: '#14151d',
+  slate50: '#f5f6fb',
+  slate100: '#eef0f4',
+  slate200: '#e8e9f1',
+  slate300: '#dddced',
+  slate400: '#b6b9cc',
+  slate500: '#8b8fa4',
+  slate600: '#565a6e',
+  slate700: '#3a3d4d',
+  slate800: '#26283a',
+  slate900: '#1d2030',
+  // Periwinkle — the pastel primary family (softened from the original blue).
+  blue50: '#e9eafb',
+  blue500: '#7c83e6',
+  blue600: '#5b63d8',
+  blue700: '#4b52c9',
+  blue800: '#3f46b8',
+  green50: '#e6f4ec',
+  green500: '#43b37a',
+  green600: '#2e975b',
+  green700: '#1f8049',
+  amber50: '#fbeed6',
+  amber500: '#d99a3f',
+  amber600: '#b07a2a',
+  red50: '#fbe4e8',
+  red500: '#e0637a',
+  red600: '#cf4f63',
+  red700: '#b23c50',
+  violet500: '#7a54cf',
 } as const;
 
 export const colors = {
@@ -42,12 +46,12 @@ export const colors = {
     raised: palette.slate50,
     sunken: palette.slate100,
     inverse: palette.slate900,
-    overlay: 'rgba(15, 23, 42, 0.45)',
+    overlay: 'rgba(29, 32, 48, 0.45)',
   },
   text: {
     primary: palette.slate900,
     secondary: palette.slate600,
-    muted: palette.slate400,
+    muted: palette.slate500,
     inverse: palette.white,
     link: palette.blue600,
   },
@@ -55,7 +59,7 @@ export const colors = {
     subtle: palette.slate200,
     default: palette.slate300,
     strong: palette.slate400,
-    focus: palette.blue500,
+    focus: palette.blue600,
   },
   interactive: {
     primary: palette.blue600,
@@ -64,29 +68,50 @@ export const colors = {
     disabledBg: palette.slate200,
     disabledText: palette.slate400,
   },
-  // Semantic status → used by Badge, Toast, StateViews, KPI accents.
+  // Semantic status → used by Badge, Toast, StateViews, KPI accents. Inks are the
+  // pastel-theme "on-soft" foregrounds (readable on their matching statusSoft tint).
   status: {
-    pending: palette.amber500,
-    accepted: palette.blue500,
+    pending: palette.amber600,
+    accepted: '#3f61c4',
     preparing: palette.violet500,
-    ready: palette.green500,
-    completed: palette.green600,
-    cancelled: palette.slate400,
+    ready: palette.green600,
+    completed: palette.green700,
+    cancelled: '#71768a',
     success: palette.green600,
     warning: palette.amber600,
     danger: palette.red600,
-    info: palette.blue600,
-    neutral: palette.slate500,
+    info: '#3f61c4',
+    neutral: '#71768a',
   },
   // Soft tints for badge/toast/callout backgrounds.
   statusSoft: {
-    success: palette.green50,
+    success: '#d7f0e0',
     warning: palette.amber50,
     danger: palette.red50,
-    info: palette.blue50,
-    neutral: palette.slate100,
+    info: '#e2e9fb',
+    neutral: '#e8e9f0',
   },
-  focusRing: 'rgba(37, 99, 235, 0.35)',
+  // Pastel KPI washes — the four attention-grabbing stat cards on Home. `wash` is the
+  // card background, `washTile` the icon chip, `washInk` the icon/foreground color.
+  wash: {
+    lavender: '#edeefb',
+    mint: '#e6f4ec',
+    peach: '#fcf1e2',
+    gold: '#f7f1dc',
+  },
+  washTile: {
+    lavender: '#e0e2fa',
+    mint: '#d3edde',
+    peach: '#fbe4c9',
+    gold: '#f2e6bf',
+  },
+  washInk: {
+    lavender: '#5b63d8',
+    mint: '#2e975b',
+    peach: '#b07a2a',
+    gold: '#a9862c',
+  },
+  focusRing: 'rgba(91, 99, 216, 0.35)',
 } as const;
 
 export type Colors = typeof colors;

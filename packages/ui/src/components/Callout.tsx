@@ -2,15 +2,16 @@ import type { ReactNode } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { tokens } from '../tokens';
 import { Text } from './Text';
+import { Icon, type IconName } from './Icon';
 
 export type CalloutTone = 'success' | 'warning' | 'danger' | 'info' | 'neutral';
 
-const TONE: Record<CalloutTone, { bg: string; border: string; fg: string; icon: string }> = {
-  success: { bg: tokens.colors.statusSoft.success, border: tokens.colors.status.success, fg: tokens.colors.status.success, icon: '✓' },
-  warning: { bg: tokens.colors.statusSoft.warning, border: tokens.colors.status.warning, fg: tokens.colors.status.warning, icon: '!' },
-  danger: { bg: tokens.colors.statusSoft.danger, border: tokens.colors.status.danger, fg: tokens.colors.status.danger, icon: '!' },
-  info: { bg: tokens.colors.statusSoft.info, border: tokens.colors.status.info, fg: tokens.colors.status.info, icon: 'i' },
-  neutral: { bg: tokens.colors.statusSoft.neutral, border: tokens.colors.border.default, fg: tokens.colors.text.secondary, icon: '•' },
+const TONE: Record<CalloutTone, { bg: string; border: string; fg: string; icon: IconName }> = {
+  success: { bg: tokens.colors.statusSoft.success, border: tokens.colors.status.success, fg: tokens.colors.status.success, icon: 'success' },
+  warning: { bg: tokens.colors.statusSoft.warning, border: tokens.colors.status.warning, fg: tokens.colors.status.warning, icon: 'warning' },
+  danger: { bg: tokens.colors.statusSoft.danger, border: tokens.colors.status.danger, fg: tokens.colors.status.danger, icon: 'warning' },
+  info: { bg: tokens.colors.statusSoft.info, border: tokens.colors.status.info, fg: tokens.colors.status.info, icon: 'info' },
+  neutral: { bg: tokens.colors.statusSoft.neutral, border: tokens.colors.border.default, fg: tokens.colors.text.secondary, icon: 'info' },
 };
 
 export type CalloutProps = {
@@ -27,9 +28,7 @@ export function Callout({ tone = 'info', title, children, testID }: CalloutProps
   return (
     <View testID={testID} style={[styles.root, { backgroundColor: c.bg, borderColor: c.border }]}>
       <View style={[styles.iconWrap, { backgroundColor: c.fg }]}>
-        <Text variant="caption" color="inverse" style={styles.icon}>
-          {c.icon}
-        </Text>
+        <Icon name={c.icon} color="inverse" size={13} strokeWidth={2.4} />
       </View>
       <View style={styles.body}>
         {title ? (
@@ -66,6 +65,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginTop: 1,
   },
-  icon: { fontWeight: tokens.typography.weight.bold, lineHeight: 14 },
   body: { flex: 1, gap: tokens.spacing.xxs },
 });

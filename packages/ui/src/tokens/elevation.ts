@@ -2,9 +2,9 @@
 
 export const radius = {
   none: 0,
-  sm: 6,
-  md: 10,
-  lg: 14,
+  sm: 7,
+  md: 12,
+  lg: 16,
   xl: 20,
   pill: 9999,
   full: 9999,
@@ -21,21 +21,21 @@ export const border = {
 export const shadow = {
   none: {},
   sm: {
-    shadowColor: '#0f172a',
+    shadowColor: '#231f52',
     shadowOpacity: 0.05,
     shadowRadius: 3,
     shadowOffset: { width: 0, height: 1 },
     elevation: 1,
   },
   md: {
-    shadowColor: '#0f172a',
+    shadowColor: '#231f52',
     shadowOpacity: 0.08,
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 4 },
     elevation: 3,
   },
   lg: {
-    shadowColor: '#0f172a',
+    shadowColor: '#231f52',
     shadowOpacity: 0.12,
     shadowRadius: 24,
     shadowOffset: { width: 0, height: 12 },

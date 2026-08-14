@@ -1,8 +1,8 @@
 import { ScrollViewStyleReset } from 'expo-router/html';
 import type { PropsWithChildren } from 'react';
 
-// Web-only root HTML document for every page. Loads Inter (the Ody brand face) and
-// applies a minimal reset so the app fills the viewport.
+// Web-only root HTML document for every page. Loads Plus Jakarta Sans (the Ody brand face)
+// and applies a minimal reset so the app fills the viewport.
 export default function Root({ children }: PropsWithChildren) {
   return (
     <html lang="en">
@@ -13,7 +13,7 @@ export default function Root({ children }: PropsWithChildren) {
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
           rel="stylesheet"
         />
         <ScrollViewStyleReset />
@@ -26,6 +26,6 @@ export default function Root({ children }: PropsWithChildren) {
 
 const globalCss = `
   html, body, #root { height: 100%; }
-  body { margin: 0; background-color: #f8fafc; }
+  body { margin: 0; background-color: #eef0f4; }
   * { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
 `;

@@ -15,7 +15,8 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@odyssey/shared": "workspace:*"
+    "@odyssey/shared": "workspace:*",
+    "react-native-svg": "^15.15.5"
   },
   "peerDependencies": {
     "react": "*",

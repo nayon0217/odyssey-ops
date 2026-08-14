@@ -13,8 +13,10 @@ import {
   ErrorState,
   EmptyState,
   Grid,
+  Icon,
   tokens,
   type Column,
+  type IconName,
 } from '@odyssey/ui';
 import type { GetHomeSummary200RecentOrdersItem } from '@odyssey/types';
 import { PageScaffold } from '../../components/PageScaffold';
@@ -84,13 +86,16 @@ export default function HomePage() {
         </Stack>
       ) : page.summary ? (
         <Stack gap="lg">
-          <Grid minChildWidth={200} gap="lg">
-            <StatCard label="Total orders" value={String(page.summary.totalOrders)} />
-            <StatCard label="Revenue" value={formatMoney(page.summary.revenueCents)} />
-            <StatCard label="Pending orders" value={String(page.summary.pendingOrders)} />
+          <Grid minChildWidth={220} gap="lg">
+            <StatCard label="Total orders" value={String(page.summary.totalOrders)} icon="orders" tone="lavender" />
+            <StatCard label="Revenue" value={formatMoney(page.summary.revenueCents)} icon="revenue" tone="mint" />
+            <StatCard label="Pending orders" value={String(page.summary.pendingOrders)} icon="timer" tone="peach" />
             <StatCard
               label="Top item"
               value={page.summary.popularItems[0]?.name ?? '—'}
+              icon="star"
+              tone="gold"
+              kind="text"
               hint={
                 page.summary.popularItems[0]
                   ? `×${page.summary.popularItems[0].quantity} sold`
@@ -138,21 +143,46 @@ export default function HomePage() {
   );
 }
 
-function StatCard({ label, value, hint }: { label: string; value: string; hint?: string }) {
+function StatCard({
+  label,
+  value,
+  hint,
+  icon,
+  tone,
+  kind = 'number',
+}: {
+  label: string;
+  value: string;
+  hint?: string;
+  icon: IconName;
+  tone: keyof typeof tokens.colors.wash;
+  kind?: 'number' | 'text';
+}) {
   return (
-    <Card>
-      <Stack gap="xs">
-        <Text variant="overline" color="secondary">
-          {label}
-        </Text>
-        <Text variant="h2" numberOfLines={1}>
-          {value}
-        </Text>
-        {hint ? (
-          <Text variant="bodySm" color="muted">
-            {hint}
+    <Card style={{ backgroundColor: tokens.colors.wash[tone] }}>
+      <Stack gap="lg">
+        <View style={[styles.statTile, { backgroundColor: tokens.colors.washTile[tone] }]}>
+          <Icon name={icon} color={tokens.colors.washInk[tone]} size={22} strokeWidth={2} />
+        </View>
+        <Stack gap="xs">
+          {kind === 'number' ? (
+            <Text variant="stat" numberOfLines={1}>
+              {value}
+            </Text>
+          ) : (
+            <Text variant="h1" numberOfLines={2}>
+              {value}
+            </Text>
+          )}
+          <Text variant="overline" color="secondary">
+            {label}
           </Text>
-        ) : null}
+          {hint ? (
+            <Text variant="bodySm" color="muted">
+              {hint}
+            </Text>
+          ) : null}
+        </Stack>
       </Stack>
     </Card>
   );
@@ -160,6 +190,13 @@ function StatCard({ label, value, hint }: { label: string; value: string; hint?:
 
 const styles = StyleSheet.create({
   statCol: { flexBasis: 220, flexGrow: 1, minWidth: 200 },
+  statTile: {
+    width: 44,
+    height: 44,
+    borderRadius: tokens.radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   loading: { padding: tokens.spacing['2xl'] },
   tableHeader: { padding: tokens.spacing.xl, paddingBottom: 0 },
 });

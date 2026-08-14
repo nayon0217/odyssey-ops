@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet } from 'react-native';
 import { tokens } from '../tokens';
 import { Text } from './Text';
+import { Icon } from './Icon';
 import { Row } from './Box';
 import type { PressableState } from './Button';
 
@@ -44,11 +45,7 @@ export function Checkbox({ checked, onChange, label, disabled = false, testID }:
                 },
               ]}
             >
-              {checked ? (
-                <Text variant="caption" color="inverse" style={styles.check}>
-                  ✓
-                </Text>
-              ) : null}
+              {checked ? <Icon name="check" color="inverse" size={13} strokeWidth={2.6} /> : null}
             </Row>
             {label ? (
               <Text variant="body" color={disabled ? 'muted' : 'primary'}>
@@ -68,10 +65,5 @@ const styles = StyleSheet.create({
     height: BOX_SIZE,
     borderRadius: tokens.radius.sm,
     borderWidth: tokens.border.thin,
-  },
-  check: {
-    fontSize: tokens.typography.size.xs,
-    lineHeight: tokens.typography.size.xs + 2,
-    fontWeight: tokens.typography.weight.bold,
   },
 });

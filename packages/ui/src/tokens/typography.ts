@@ -1,9 +1,10 @@
 import type { TextStyle } from 'react-native';
 
-// Inter is the Ody brand face; system-ui is the graceful fallback (and matches the
-// platform's own optical tuning on the reviewer's machine). Loaded on web via +html.tsx.
+// Plus Jakarta Sans is the Ody brand face — a geometric humanist sans with the friendly,
+// slightly-rounded character the pastel theme calls for. system-ui / SF Pro is the graceful
+// fallback (and matches the platform's own optical tuning). Loaded on web via +html.tsx.
 const fontFamily = {
-  base: "Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
+  base: "'Plus Jakarta Sans', 'SF Pro Display', -apple-system, system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
   mono: "'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace",
 } as const;
 
@@ -12,6 +13,7 @@ const weight = {
   medium: '500',
   semibold: '600',
   bold: '700',
+  extrabold: '800',
 } as const;
 
 const size = {
@@ -23,25 +25,45 @@ const size = {
   xl: 22,
   '2xl': 27,
   '3xl': 34,
+  '4xl': 44,
+  '5xl': 56,
 } as const;
 
 // Apple typography discipline: tracking is size-specific. Large display text gets
 // NEGATIVE tracking (it reads too loose as it grows); small text gets a slight positive
 // bump for legibility; body sits near zero. Leading tightens as size grows.
 export const textVariants = {
+  // Big attention-grabbing numerals for KPIs / hero stats. Extrabold, very tight tracking,
+  // and TABULAR figures so digits stay column-aligned as values change.
+  stat: {
+    fontFamily: fontFamily.base,
+    fontSize: size['5xl'],
+    fontWeight: weight.extrabold,
+    lineHeight: 58,
+    letterSpacing: -2,
+    fontVariant: ['tabular-nums'] as TextStyle['fontVariant'],
+  },
+  statSm: {
+    fontFamily: fontFamily.base,
+    fontSize: size['4xl'],
+    fontWeight: weight.extrabold,
+    lineHeight: 46,
+    letterSpacing: -1.4,
+    fontVariant: ['tabular-nums'] as TextStyle['fontVariant'],
+  },
   display: {
     fontFamily: fontFamily.base,
     fontSize: size['3xl'],
-    fontWeight: weight.bold,
+    fontWeight: weight.extrabold,
     lineHeight: 40,
-    letterSpacing: -0.8,
+    letterSpacing: -1,
   },
   h1: {
     fontFamily: fontFamily.base,
     fontSize: size['2xl'],
-    fontWeight: weight.bold,
+    fontWeight: weight.extrabold,
     lineHeight: 34,
-    letterSpacing: -0.6,
+    letterSpacing: -0.7,
   },
   h2: {
     fontFamily: fontFamily.base,

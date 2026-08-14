@@ -1,13 +1,13 @@
 import { Slot, usePathname, useRouter } from 'expo-router';
 import { View, StyleSheet } from 'react-native';
-import { SideNav, Text, tokens, type NavItem } from '@odyssey/ui';
+import { SideNav, Text, Icon, tokens, type NavItem } from '@odyssey/ui';
 
 const NAV: (NavItem & { route: string })[] = [
-  { key: '/', route: '/', label: 'Home', icon: <Text variant="body">🏠</Text> },
-  { key: '/orders', route: '/orders', label: 'Orders', icon: <Text variant="body">🧾</Text> },
-  { key: '/menu', route: '/menu', label: 'Menu', icon: <Text variant="body">🍽️</Text> },
-  { key: '/crm', route: '/crm', label: 'Customers', icon: <Text variant="body">👥</Text> },
-  { key: '/settings', route: '/settings', label: 'Settings', icon: <Text variant="body">⚙️</Text> },
+  { key: '/', route: '/', label: 'Home', icon: <Icon name="home" /> },
+  { key: '/orders', route: '/orders', label: 'Orders', icon: <Icon name="orders" /> },
+  { key: '/menu', route: '/menu', label: 'Menu', icon: <Icon name="menu" /> },
+  { key: '/crm', route: '/crm', label: 'Customers', icon: <Icon name="customers" /> },
+  { key: '/settings', route: '/settings', label: 'Settings', icon: <Icon name="settings" /> },
 ];
 
 export default function DashboardLayout() {

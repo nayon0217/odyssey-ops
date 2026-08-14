@@ -3,6 +3,8 @@ import { ScrollView, View, StyleSheet } from 'react-native';
 import {
   tokens,
   Text,
+  Icon,
+  type IconName,
   Box,
   Row,
   Stack,
@@ -44,6 +46,12 @@ const DEMO_COLUMNS: Column<DemoRow>[] = [
   { key: 'name', header: 'Item', accessor: (r) => r.name },
   { key: 'price', header: 'Price', width: 100, align: 'right', accessor: (r) => r.price },
   { key: 'status', header: 'Status', width: 140, render: (r) => <StatusBadge status={r.status} /> },
+];
+
+const ICON_NAMES: IconName[] = [
+  'home', 'orders', 'menu', 'customers', 'settings', 'search', 'bell', 'plus',
+  'revenue', 'timer', 'flame', 'star', 'arrowUp', 'arrowDown', 'chevronRight', 'check',
+  'success', 'warning', 'info',
 ];
 
 // Living style guide + visual test harness for the design system.
@@ -94,7 +102,12 @@ export default function UILibrary() {
         </ShowcaseRow>
       </Section>
 
-      <Section title="Typography" description="Inter, with size-specific tracking and leading.">
+      <Section title="Typography" description="Plus Jakarta Sans, with size-specific tracking and leading.">
+        <Row gap="xl" align="baseline" wrap="wrap">
+          <Text variant="stat">248</Text>
+          <Text variant="statSm">$9,720</Text>
+        </Row>
+        <Text variant="caption" color="muted">stat / statSm — big tabular numerals for KPIs</Text>
         <Text variant="display">Display — 34</Text>
         <Text variant="h1">Heading 1 — 27</Text>
         <Text variant="h2">Heading 2 — 22</Text>
@@ -105,6 +118,19 @@ export default function UILibrary() {
         <Text variant="label">LABEL — form field labels</Text>
         <Text variant="caption" color="muted">Caption — muted, for metadata</Text>
         <Text variant="overline" color="secondary">Overline — section eyebrows</Text>
+      </Section>
+
+      <Section title="Icons" description="Illustrated line icons (Lucide geometry) — the single icon primitive. No emoji in the UI.">
+        <ShowcaseRow>
+          {ICON_NAMES.map((name) => (
+            <Stack key={name} gap="xs" align="center" style={styles.iconCell}>
+              <View style={styles.iconTile}>
+                <Icon name={name} color="primary" size={22} />
+              </View>
+              <Text variant="caption" color="secondary">{name}</Text>
+            </Stack>
+          ))}
+        </ShowcaseRow>
       </Section>
 
       <Section title="Spacing & radius" description="4px base scale; radius scale.">
@@ -266,7 +292,7 @@ export default function UILibrary() {
         <ShowcaseRow>
           <View style={styles.stateBox}><LoadingState label="Loading orders…" /></View>
           <View style={styles.stateBox}>
-            <EmptyState icon={<Text variant="h1">🍽️</Text>} title="No orders yet" description="New orders will show up here." />
+            <EmptyState icon={<Icon name="orders" color="muted" size={30} />} title="No orders yet" description="New orders will show up here." />
           </View>
           <View style={styles.stateBox}><ErrorState description="Couldn’t load data." onRetry={() => {}} /></View>
         </ShowcaseRow>
@@ -346,6 +372,15 @@ const styles = StyleSheet.create({
     height: 80,
     backgroundColor: tokens.colors.surface.base,
     borderRadius: tokens.radius.lg,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  iconCell: { width: 74 },
+  iconTile: {
+    width: 48,
+    height: 48,
+    borderRadius: tokens.radius.md,
+    backgroundColor: tokens.colors.surface.sunken,
     alignItems: 'center',
     justifyContent: 'center',
   },

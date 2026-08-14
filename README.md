@@ -94,8 +94,13 @@ always agree), and applied in the seed so initial data is consistent.
 
 **Styling.** A centralized TS **token module + React Native `StyleSheet`** (via `@odyssey/ui`),
 not NativeWind — it gives the cleanest "tokens are centralized" story, identical code on web and
-native, and zero extra build config. Motion/interaction follow Apple's fluid-interface guidance
-(instant press feedback, restraint, clear feedback states).
+native, and zero extra build config. The visual identity is a **pastel** restaurant-SaaS register
+(lilac-gray canvas, periwinkle primary, soft status tints) — the semantic token *structure* is
+unchanged from the original blue theme, so the intent behind every token still holds; only the
+values moved. Brand face is **Plus Jakarta Sans**; KPIs use a big-number `stat` type variant with
+tabular figures. Icons are **illustrated line icons** via a single `Icon` primitive
+(`react-native-svg`, Lucide geometry) — **no emoji in the UI**. Motion/interaction follow Apple's
+fluid-interface guidance (instant press feedback, restraint, clear feedback states).
 
 **Local infra.** Docker Compose Postgres + a Cloudflare **Hyperdrive** binding with
 `drizzle-orm/node-postgres` (`nodejs_compat`). Local dev reaches Postgres through Hyperdrive's
