@@ -65,68 +65,12 @@ orders** spread across the last ~30 days and every status. Re-runnable at any ti
 
 ## Architecture decisions
 
-Built in verifiable phases (git history: Phase 0 guardrails → walking-skeleton contract →
-domain API → design system → five pages → tests/DX → docs), each gated on a real check
-(curl, browser, green tests) before the next started.
-
-**Contract flows one direction.** Persisted truth starts in the Drizzle schema
-(`services/backend/src/db/schema.ts`). `drizzle-zod` derives Zod schemas; `@hono/zod-openapi`
-turns those into typed routes + an OpenAPI document; `scripts/emit-openapi.ts` writes
-`openapi.json` without booting a server; Orval regenerates fully-typed React Query hooks in
-`@odyssey/api-client`. The dashboard imports **only** those hooks/models (via `@odyssey/types`
-as the app-facing surface) — no page hand-writes a DTO, and `generated/` is never edited.
-`pnpm gen:contract` runs the whole chain.
-
-**Enums and the state machine stay single-sourced.** Order statuses/actions live once in
-`@odyssey/shared` (`order-status.ts`). The Postgres `pgEnum`, backend transition enforcement,
-and dashboard action buttons all consume that map — so the UI cannot offer an illegal action
-and the server rejects a stale client with `409` + allowed actions. Status changes go through
-`POST /orders/:id/transition`, never a loose `PATCH status`.
-
-**Money and line items are server-authoritative.** Amounts are integer **cents** end-to-end
-(format only at the UI edge). Order totals are computed on the server from current prices;
-a client-sent total is ignored. `order_items` **snapshot** name + unit price at purchase so
-history never drifts with later menu edits.
-
-**Time-based domain invariant.** Single-sourced as `effectiveOrderStatus` in `@odyssey/shared`:
-(1) preparing >1h → ready; (2) any status other than accepted/cancelled >1 day → accepted.
-Enforced as DB truth by `sweepStalePreparingOrders` before every order read (list, detail,
-home, customer), rejected on illegal day-old transitions (`409`), and **asserted in seed** so
-bootstrap data cannot violate the rule.
-
-**Presentational dashboard, logic in services.** Pages compose `@odyssey/ui` + generated hooks;
-draft/validation helpers (e.g. order-draft totals) are pure modules under `apps/dashboard/lib`
-so they stay unit-testable without React. Form date filters use native HTML `type="date"` on
-web — react-native-web’s `TextInput` overwrites `type`, so `@odyssey/ui`’s `Input` renders a
-real calendar control when `type="date"`.
-
-**Design system.** Centralized TS tokens + React Native `StyleSheet` in `@odyssey/ui` (not
-NativeWind): one `tokens` object, identical web/native primitives, `/ui` living style guide.
-Pastel restaurant-SaaS register (lilac-gray canvas, periwinkle primary, soft status tints);
-Outfit + Plus Jakarta Sans; illustrated `Icon` primitive via `react-native-svg` (no emoji).
-Select menus expand **inline** (in-flow) so they work inside modals/scroll views on web.
-
-**Local infra.** Docker Compose Postgres on host **5433** (reviewer needs only Docker).
-Worker → DB via Cloudflare **Hyperdrive** + `drizzle-orm/node-postgres` (`nodejs_compat`);
-migrations/seed use `DATABASE_URL` directly.
+Developed in phases (contract → domain → UI → pages → tests). The API contract flows one way: Drizzle → drizzle-zod → OpenAPI → Orval; the dashboard imports only generated hooks/types. Order status lives once in @odyssey/shared and is enforced via POST /orders/:id/transition. Staleness rules (preparing >1h → ready; >1 day → accepted|cancelled) are swept on read and asserted in seed. The dashboard is presentational; @odyssey/ui uses centralized tokens + StyleSheet (not NativeWind). Local Postgres is Docker + Hyperdrive.
 
 ## Tradeoffs and incomplete areas
 
-- **Native parity**: verified for **web only**. RN primitives are used throughout so iOS/Android
-  is plausible, but simulators were not run — called out as a bonus in the brief.
-- **Dark mode**: token structure is semantic and could host a second theme; only light ships
-  (deliberate timebox cut).
-- **Pagination**: Orders and CRM load the full seeded set. Production would paginate API + lists;
-  depth on the order lifecycle won over list-scale plumbing.
-- **Auth**: no login/session — out of scope for the evaluation; required before any real deploy.
-- **Realtime**: no websockets/polling beyond React Query defaults; kitchen boards would want push.
-- **Settings depth**: availability, auto-accept, prep time, and hours are wired end-to-end;
-  richer ops config was cut in favor of Orders/Menu depth.
-- **Day-stale model**: collapsing mid-flow / ready / completed orders older than a day to
-  **accepted** (or leaving **cancelled**) is a simplified ops rule for the demo dataset — not a
-  full historical archive policy.
-- **Test coverage**: targeted, not exhaustive (per the brief) — backend transitions + staleness,
-  shared state machine + money, order-draft helpers, and key UI primitives (Button, StatusBadge).
+Verified for web only—RN primitives make native plausible, but simulators weren’t run. One light theme ships; dark mode is a values-only follow-up. Orders/CRM load the full seed set (no pagination).Settings cover availability, auto-accept, prep time, and hours—deeper ops config was cut. Day-old mid-flow orders collapsing to accepted is a simplified demo rule, not a full archive policy.
+
 
 ## AI usage notes
 
