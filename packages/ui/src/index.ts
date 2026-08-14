@@ -3,6 +3,7 @@ export * from './tokens';
 
 // Foundation
 export * from './components/Text';
+export * from './components/Icon';
 export * from './components/Box';
 export * from './components/Button';
 export * from './components/Card';

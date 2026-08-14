@@ -53,6 +53,7 @@ instance, no server needed) → Orval regenerates `packages/api-client/src/gener
   backend transition endpoint, which enforces the state machine.
 - ❌ Put business logic in screen/page components. Logic lives in backend services and hooks.
 - ❌ Scatter design values. Colors/spacing/type/radius/shadow come from `packages/ui` tokens.
+- ❌ Use an emoji (or a Unicode glyph like `✓`) as a UI icon. Icons come from the `Icon` primitive.
 
 ## Order status state machine (enforced server-side)
 
@@ -79,10 +80,24 @@ returned status can never disagree. The seed applies the same rule so initial da
 
 ## Styling decision
 
-**Centralized TS token module + React Native `StyleSheet`** via a `useTheme()` hook (light/dark),
-not NativeWind. Rationale: cleanest "tokens are centralized" story, identical code on web and
-native, zero extra build/babel config, and full control over the design system surface the
-assignment is graded on.
+**Centralized TS token module + React Native `StyleSheet`**, not NativeWind. Every component
+imports the one `tokens` object (`packages/ui/src/tokens`); no component inlines a hex, raw pixel,
+or font size. Rationale: cleanest "tokens are centralized" story, identical code on web and native,
+zero extra build/babel config, and full control over the design system the assignment is graded on.
+A single light theme ships; the token structure is semantic so a second theme is a values-only
+change (a documented, deliberate cut for the timebox).
+
+**Visual identity (pastel redesign).** The palette is a pastel restaurant-SaaS register — lilac-gray
+canvas, periwinkle primary, soft status tints — but the semantic **structure is unchanged from the
+original blue theme**, so the intent behind every status/interactive token still holds; only the
+values moved. Brand face is **Plus Jakarta Sans** (geometric humanist sans; web-loaded via
+`+html.tsx`, system-ui/SF Pro fallback). KPIs use a big-number `stat`/`statSm` type variant with
+**tabular figures** so the headline metrics grab attention and stay column-aligned.
+
+**Icons.** A single `Icon` primitive in `@odyssey/ui` (backed by `react-native-svg`, works web +
+native) renders illustrated line icons — **no emoji anywhere in the UI**. Geometry is Lucide
+(ISC-licensed, 24×24, round strokes); each glyph inherits stroke/fill from its `<Svg>` so one
+`color` prop tints it. Icons are a design-system primitive (centralized), never scattered per-page.
 
 ## Local infra decisions
 
@@ -96,7 +111,8 @@ assignment is graded on.
 
 pnpm workspace + Turborepo · Expo (RN + Web) · Hono on Cloudflare Workers · PostgreSQL + Drizzle ·
 drizzle-zod · OpenAPI · Orval · React Query. No Next.js / NestJS / Prisma / tRPC / Supabase /
-Firebase / handwritten frontend API types.
+Firebase / handwritten frontend API types. (Icons: `react-native-svg` — Expo-supported, web +
+native — behind the `Icon` primitive; the only rendering dependency added for the design system.)
 
 ## How AI is being used on this project
 
