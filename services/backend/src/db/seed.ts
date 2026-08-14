@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm';
-import { ORDER_STATUSES } from '@odyssey/shared';
+import { ORDER_STATUSES, effectiveOrderStatus, type OrderStatus } from '@odyssey/shared';
 import { createDb } from './client';
 import { menuCategories, menuItems, customers, orders, orderItems, settings } from './schema';
 
@@ -85,8 +85,10 @@ async function main() {
   console.log('Seeding 60 orders across all statuses and ~30 days…');
   for (let i = 0; i < 60; i++) {
     const customer = customerRows[i % customerRows.length]!;
-    const status = ORDER_STATUSES[i % ORDER_STATUSES.length]!;
+    const rawStatus = ORDER_STATUSES[i % ORDER_STATUSES.length]!;
     const createdAt = new Date(Date.now() - i * 12 * 60 * 60 * 1000).toISOString();
+    // Honor the invariant at seed time: a >1h-old "preparing" order is already "ready".
+    const status = effectiveOrderStatus(rawStatus, createdAt);
 
     // 1–3 available items, quantity 1–2 each.
     const lineCount = 1 + (i % 3);
@@ -113,8 +115,42 @@ async function main() {
     );
   }
 
+  // A handful of fresh (<1h) orders so live statuses like "preparing" are represented
+  // by valid, non-stale rows (older "preparing" is normalized to "ready" above).
+  const recent: { status: OrderStatus; minutesAgo: number }[] = [
+    { status: 'pending', minutesAgo: 3 },
+    { status: 'accepted', minutesAgo: 8 },
+    { status: 'preparing', minutesAgo: 12 },
+    { status: 'preparing', minutesAgo: 25 },
+    { status: 'ready', minutesAgo: 18 },
+    { status: 'accepted', minutesAgo: 40 },
+  ];
+  for (let j = 0; j < recent.length; j++) {
+    const { status, minutesAgo } = recent[j]!;
+    const customer = customerRows[j % customerRows.length]!;
+    const createdAt = new Date(Date.now() - minutesAgo * 60 * 1000).toISOString();
+    const lines = Array.from({ length: 1 + (j % 2) }, (_, k) => {
+      const item = availableItems[(j + k) % availableItems.length]!;
+      return { item, quantity: 1 + ((j + k) % 2) };
+    });
+    const totalCents = lines.reduce((sum, l) => sum + l.item.priceCents * l.quantity, 0);
+    const [order] = await db
+      .insert(orders)
+      .values({ customerId: customer.id, status, totalCents, createdAt, updatedAt: createdAt })
+      .returning();
+    await db.insert(orderItems).values(
+      lines.map(({ item, quantity }) => ({
+        orderId: order!.id,
+        menuItemId: item.id,
+        nameSnapshot: item.name,
+        unitPriceCentsSnapshot: item.priceCents,
+        quantity,
+      })),
+    );
+  }
+
   console.log(
-    `Done: ${cats.length} categories, ${items.length} items, ${customerRows.length} customers, 60 orders.`,
+    `Done: ${cats.length} categories, ${items.length} items, ${customerRows.length} customers, ${60 + recent.length} orders.`,
   );
   process.exit(0);
 }

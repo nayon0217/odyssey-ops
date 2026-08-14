@@ -2,7 +2,7 @@ import { Pressable, StyleSheet } from 'react-native';
 import { tokens } from '../tokens';
 import { Text } from './Text';
 import { Row } from './Box';
-import type { PressableState } from './Button';
+import { WEB_FOCUS_RING, type PressableState } from './Button';
 
 export type TabItem<T extends string> = {
   key: T;
@@ -30,13 +30,14 @@ export function Tabs<T extends string>({ tabs, activeKey, onChange, testID }: Ta
             accessibilityRole="tab"
             accessibilityState={{ selected: isActive }}
             style={(rawState) => {
-              const { hovered } = rawState as PressableState;
+              const { hovered, pressed, focused } = rawState as PressableState;
               return [
                 styles.tab,
                 {
                   borderBottomColor: isActive ? tokens.colors.interactive.primary : 'transparent',
                   backgroundColor: !isActive && hovered ? tokens.colors.surface.raised : 'transparent',
                 },
+                focused && !pressed ? WEB_FOCUS_RING : null,
               ];
             }}
           >

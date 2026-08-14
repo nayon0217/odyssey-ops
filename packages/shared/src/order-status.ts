@@ -92,3 +92,27 @@ export function applyAction(current: OrderStatus, action: OrderAction): OrderSta
   if (!next) throw new InvalidTransitionError(current, action);
   return next;
 }
+
+// ── Staleness invariant ──────────────────────────────────────────────────────
+// An order placed more than an hour ago can never still be "preparing" — by then
+// it must be prepared (at least "ready"). This is the single source of that rule;
+// the backend enforces it in the DB (a sweep before order reads) and the frontend
+// applies it defensively on display.
+export const PREP_STALE_MS = 60 * 60 * 1000;
+
+export function isStalePreparing(
+  status: OrderStatus,
+  placedAtIso: string,
+  now: number = Date.now(),
+): boolean {
+  return status === 'preparing' && now - new Date(placedAtIso).getTime() > PREP_STALE_MS;
+}
+
+/** The effective status once the staleness rule is applied ("preparing" > 1h → "ready"). */
+export function effectiveOrderStatus(
+  status: OrderStatus,
+  placedAtIso: string,
+  now: number = Date.now(),
+): OrderStatus {
+  return isStalePreparing(status, placedAtIso, now) ? 'ready' : status;
+}

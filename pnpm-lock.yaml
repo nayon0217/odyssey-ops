@@ -93,6 +93,9 @@ importers:
       typescript:
         specifier: ~5.9.2
         version: 5.9.3
+      vitest:
+        specifier: ^2.1.8
+        version: 2.1.9(@types/node@26.2.0)(jsdom@25.0.1)(lightningcss@1.33.0)(terser@5.50.0)
 
   packages/api-client:
     dependencies:
@@ -120,6 +123,13 @@ importers:
         version: 2.1.9(@types/node@26.2.0)(jsdom@25.0.1)(lightningcss@1.33.0)(terser@5.50.0)
 
   packages/types:
+    dependencies:
+      '@odyssey/api-client':
+        specifier: workspace:*
+        version: link:../api-client
+      '@odyssey/shared':
+        specifier: workspace:*
+        version: link:../shared
     devDependencies:
       typescript:
         specifier: ^5.7.2

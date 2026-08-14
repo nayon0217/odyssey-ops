@@ -14,8 +14,7 @@ import {
   tokens,
   type Column,
 } from '@odyssey/ui';
-import type { OrderStatus } from '@odyssey/shared';
-import type { ListCustomers200Item } from '@odyssey/api-client';
+import type { ListCustomers200Item } from '@odyssey/types';
 import { PageScaffold } from '../../components/PageScaffold';
 import { useCrmPage, useCustomerDetail } from '../../hooks/use-crm-page';
 import { formatMoney, formatRelative } from '../../lib/format';
@@ -139,7 +138,7 @@ function CustomerDetailDrawer({ customerId, onClose }: { customerId: string | nu
                 <Row key={o.id} justify="space-between" align="center">
                   <Row gap="sm" align="center">
                     <Text variant="body">#{o.orderNumber}</Text>
-                    <StatusBadge status={o.status as OrderStatus} />
+                    <StatusBadge status={o.status} />
                   </Row>
                   <Stack gap="xxs" align="flex-end">
                     <Text variant="body">{formatMoney(o.totalCents)}</Text>

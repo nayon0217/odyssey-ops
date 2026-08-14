@@ -35,34 +35,26 @@ const WEB_FIXED = Platform.OS === 'web' ? ({ position: 'fixed' } as unknown as V
  */
 export function Modal({ visible, onClose, title, children, footer, width, testID }: ModalProps) {
   const opacity = useRef(new Animated.Value(0)).current;
-  const scale = useRef(new Animated.Value(0.96)).current;
 
   useEffect(() => {
     if (!visible) return;
     opacity.setValue(0);
-    scale.setValue(0.96);
-    Animated.parallel([
-      Animated.timing(opacity, {
-        toValue: 1,
-        duration: tokens.motion.duration.base,
-        easing: Easing.out(Easing.ease),
-        useNativeDriver: Platform.OS !== 'web',
-      }),
-      Animated.timing(scale, {
-        toValue: 1,
-        duration: tokens.motion.duration.base,
-        easing: Easing.out(Easing.ease),
-        useNativeDriver: Platform.OS !== 'web',
-      }),
-    ]).start();
-  }, [visible, opacity, scale]);
+    Animated.timing(opacity, {
+      toValue: 1,
+      duration: tokens.motion.duration.base,
+      easing: Easing.out(Easing.ease),
+      useNativeDriver: Platform.OS !== 'web',
+    }).start();
+  }, [visible, opacity]);
 
   if (!visible) return null;
 
   return (
     <View style={[styles.overlay, WEB_FIXED]} testID={testID}>
       <Pressable style={StyleSheet.absoluteFill} onPress={onClose} accessibilityLabel="Close dialog" />
-      <Animated.View style={[styles.panelWrap, { maxWidth: width ?? 480, opacity, transform: [{ scale }] }]}>
+      {/* No transform on this layer — a transform would trap position:fixed descendants
+          (e.g. a Select dropdown opened inside the modal). Fade only. */}
+      <Animated.View style={[styles.panelWrap, { maxWidth: width ?? 480, opacity }]}>
         <View style={styles.panel}>
           <View style={styles.header}>
             {title ? (

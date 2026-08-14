@@ -108,3 +108,26 @@ describe('POST /orders/:id/transition', () => {
     expect(body.error.details?.availableActions).toContain('start_preparing');
   });
 });
+
+describe('staleness invariant', () => {
+  it('normalizes a >1h-old "preparing" order to "ready" on read', async () => {
+    const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
+    const [stale] = await db
+      .insert(orders)
+      .values({
+        customerId,
+        status: 'preparing',
+        totalCents: 500,
+        createdAt: twoHoursAgo,
+        updatedAt: twoHoursAgo,
+      })
+      .returning();
+    createdOrderIds.push(stale!.id);
+
+    // Listing orders runs the sweep; the stale order must come back as "ready", never "preparing".
+    const res = await app.request('/orders', {}, env);
+    const list = (await res.json()) as { id: string; status: string }[];
+    const found = list.find((o) => o.id === stale!.id);
+    expect(found?.status).toBe('ready');
+  });
+});

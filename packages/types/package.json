@@ -12,6 +12,10 @@
     "lint": "eslint . --max-warnings 0",
     "typecheck": "tsc --noEmit"
   },
+  "dependencies": {
+    "@odyssey/api-client": "workspace:*",
+    "@odyssey/shared": "workspace:*"
+  },
   "devDependencies": {
     "typescript": "^5.7.2"
   }

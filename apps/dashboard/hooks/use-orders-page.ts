@@ -3,9 +3,11 @@ import {
   useListOrders,
   useGetOrder,
   useTransitionOrder,
-  type ListOrdersParams,
-  type GetOrder200,
+  useListCustomers,
+  useListMenuItems,
+  useCreateOrder,
 } from '@odyssey/api-client';
+import type { ListOrdersParams, GetOrder200 } from '@odyssey/types';
 
 /** Invalidate everything a status change can affect: orders, home KPIs, customer spend. */
 function useInvalidateOrderData() {
@@ -25,14 +27,30 @@ function useInvalidateOrderData() {
 export function useOrdersPage(params: ListOrdersParams) {
   const invalidate = useInvalidateOrderData();
   const ordersQuery = useListOrders(params);
+  const customersQuery = useListCustomers();
   const transition = useTransitionOrder({ mutation: { onSuccess: invalidate } });
 
   return {
     orders: ordersQuery.data?.data ?? [],
+    customers: customersQuery.data?.data ?? [],
     isLoading: ordersQuery.isLoading,
     isError: Boolean(ordersQuery.error),
     refetch: ordersQuery.refetch,
     transition,
+  };
+}
+
+/** Data + mutation for the "new order" flow: customers, orderable items, and create. */
+export function useNewOrder() {
+  const invalidate = useInvalidateOrderData();
+  const customersQuery = useListCustomers();
+  const itemsQuery = useListMenuItems();
+  const createOrder = useCreateOrder({ mutation: { onSuccess: invalidate } });
+
+  return {
+    customers: customersQuery.data?.data ?? [],
+    availableItems: (itemsQuery.data?.data ?? []).filter((item) => item.isAvailable),
+    createOrder,
   };
 }
 

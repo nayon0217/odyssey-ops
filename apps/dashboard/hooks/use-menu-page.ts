@@ -5,9 +5,9 @@ import {
   useListMenuItems,
   useCreateMenuItem,
   useUpdateMenuItem,
-  type ListMenuItems200Item,
-  type ListMenuCategories200Item,
+  useCreateMenuCategory,
 } from '@odyssey/api-client';
+import type { ListMenuItems200Item, ListMenuCategories200Item } from '@odyssey/types';
 
 export type MenuItem = ListMenuItems200Item;
 export type MenuCategory = ListMenuCategories200Item;
@@ -23,9 +23,12 @@ export function useMenuPage() {
   const itemsQuery = useListMenuItems();
 
   const invalidateItems = () => queryClient.invalidateQueries({ queryKey: ['/menu-items'] });
+  const invalidateCategories = () =>
+    queryClient.invalidateQueries({ queryKey: ['/menu-categories'] });
 
   const createItem = useCreateMenuItem({ mutation: { onSuccess: invalidateItems } });
   const updateItem = useUpdateMenuItem({ mutation: { onSuccess: invalidateItems } });
+  const createCategory = useCreateMenuCategory({ mutation: { onSuccess: invalidateCategories } });
 
   const categories = categoriesQuery.data?.data ?? [];
   const items = itemsQuery.data?.data ?? [];
@@ -58,6 +61,7 @@ export function useMenuPage() {
     },
     createItem,
     updateItem,
+    createCategory,
     toggleAvailability: (item: MenuItem) =>
       updateItem.mutate({ id: item.id, data: { isAvailable: !item.isAvailable } }),
   };

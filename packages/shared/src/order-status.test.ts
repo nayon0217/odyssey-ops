@@ -6,8 +6,12 @@ import {
   getAvailableActions,
   getAvailableTransitions,
   isTerminalStatus,
+  effectiveOrderStatus,
+  isStalePreparing,
   InvalidTransitionError,
 } from './order-status';
+
+const HOUR_MS = 60 * 60 * 1000;
 
 describe('order status state machine', () => {
   it.each([
@@ -54,5 +58,26 @@ describe('order status state machine', () => {
     expect(isTerminalStatus('completed')).toBe(true);
     expect(isTerminalStatus('cancelled')).toBe(true);
     expect(isTerminalStatus('pending')).toBe(false);
+  });
+});
+
+describe('staleness invariant (preparing > 1h → ready)', () => {
+  const twoHoursAgo = new Date(Date.now() - 2 * HOUR_MS).toISOString();
+  const tenMinAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+
+  it('normalizes a >1h-old preparing order to ready', () => {
+    expect(isStalePreparing('preparing', twoHoursAgo)).toBe(true);
+    expect(effectiveOrderStatus('preparing', twoHoursAgo)).toBe('ready');
+  });
+
+  it('leaves a recent preparing order untouched', () => {
+    expect(isStalePreparing('preparing', tenMinAgo)).toBe(false);
+    expect(effectiveOrderStatus('preparing', tenMinAgo)).toBe('preparing');
+  });
+
+  it('never affects other statuses, even when old', () => {
+    expect(effectiveOrderStatus('accepted', twoHoursAgo)).toBe('accepted');
+    expect(effectiveOrderStatus('pending', twoHoursAgo)).toBe('pending');
+    expect(isStalePreparing('accepted', twoHoursAgo)).toBe(false);
   });
 });

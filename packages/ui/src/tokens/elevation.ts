@@ -50,6 +50,7 @@ export const zIndex = {
   drawer: 40,
   overlay: 50,
   modal: 60,
+  dropdown: 70,
   toast: 80,
 } as const;
 

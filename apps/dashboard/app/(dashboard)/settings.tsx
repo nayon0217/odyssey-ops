@@ -10,6 +10,7 @@ import {
   Stack,
   Divider,
   Text,
+  Callout,
   LoadingState,
   ErrorState,
   useToast,
@@ -77,6 +78,11 @@ export default function SettingsPage() {
         <LoadingState label="Loading settings…" />
       ) : (
         <View style={styles.column}>
+          {!form.isAcceptingOrders ? (
+            <Callout tone="warning" title="Orders are paused">
+              New orders are rejected by the API until “Accepting orders” is turned back on.
+            </Callout>
+          ) : null}
           <Card>
             <CardHeader title="Service availability" subtitle="Control whether new orders are accepted" />
             <Stack gap="lg">

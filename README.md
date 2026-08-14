@@ -86,6 +86,12 @@ endpoint that runs the state machine — not a generic `PATCH status` field writ
 can never reach the database (it returns `409` with the allowed actions). Order **totals are always
 computed server-side** from current prices; a client-sent total is ignored.
 
+**A time-based domain invariant.** An order placed **more than an hour ago can never still be
+"preparing"** — by then it must be prepared (at least "ready"). The rule is single-sourced in
+`@odyssey/shared` (`effectiveOrderStatus`, threshold `PREP_STALE_MS`), enforced in the database by a
+`sweepStalePreparingOrders` pass run before every order read (so the stored status and API responses
+always agree), and applied in the seed so initial data is consistent.
+
 **Styling.** A centralized TS **token module + React Native `StyleSheet`** (via `@odyssey/ui`),
 not NativeWind — it gives the cleanest "tokens are centralized" story, identical code on web and
 native, and zero extra build config. Motion/interaction follow Apple's fluid-interface guidance

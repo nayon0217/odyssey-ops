@@ -1,4 +1,5 @@
-import { useGetHomeSummary, type GetHomeSummary200 } from '@odyssey/api-client';
+import { useGetHomeSummary } from '@odyssey/api-client';
+import type { GetHomeSummary200 } from '@odyssey/types';
 
 /**
  * Orchestrates the Home page: fetches the dashboard summary via the generated hook.

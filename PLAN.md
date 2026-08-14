@@ -68,6 +68,15 @@ The transition map lives once in `packages/shared` and is enforced by the backen
 The dashboard renders action buttons from the allowed transitions the API reports — it never
 hardcodes them.
 
+## Order staleness invariant
+
+An order placed **more than an hour ago can never still be "preparing"** — by then it must be
+prepared (at least "ready"). The rule is single-sourced in `packages/shared`
+(`effectiveOrderStatus` / `isStalePreparing`, threshold `PREP_STALE_MS`). The backend enforces it
+as **data truth** via `sweepStalePreparingOrders`, run before every order read (list, detail, home
+summary, customer detail) so the stored status and every API response agree — a status filter and a
+returned status can never disagree. The seed applies the same rule so initial data is consistent.
+
 ## Styling decision
 
 **Centralized TS token module + React Native `StyleSheet`** via a `useTheme()` hook (light/dark),

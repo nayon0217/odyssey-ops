@@ -37,6 +37,24 @@ export default function MenuPage() {
   const [editing, setEditing] = useState<MenuItem | null>(null);
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [nameError, setNameError] = useState<string>();
+  const [categoryOpen, setCategoryOpen] = useState(false);
+  const [categoryName, setCategoryName] = useState('');
+
+  function saveCategory() {
+    const name = categoryName.trim();
+    if (!name) return;
+    page.createCategory.mutate(
+      { data: { name } },
+      {
+        onSuccess: () => {
+          setCategoryOpen(false);
+          setCategoryName('');
+          toast.show({ title: 'Category created', tone: 'success' });
+        },
+        onError: () => toast.show({ title: 'Could not create category', tone: 'error' }),
+      },
+    );
+  }
 
   const categoryTabs = useMemo(
     () => [{ key: 'all', label: 'All' }, ...page.categories.map((c) => ({ key: c.id, label: c.name }))],
@@ -148,8 +166,33 @@ export default function MenuPage() {
     <PageScaffold
       title="Menu"
       subtitle="Manage categories, items, prices, and availability"
-      actions={<Button label="Add item" onPress={openCreate} />}
+      actions={
+        <Row gap="sm">
+          <Button label="New category" variant="secondary" onPress={() => setCategoryOpen(true)} />
+          <Button label="Add item" onPress={openCreate} />
+        </Row>
+      }
       overlay={
+        <>
+        <Modal
+          visible={categoryOpen}
+          onClose={() => setCategoryOpen(false)}
+          title="New category"
+          testID="new-category-modal"
+          footer={
+            <>
+              <Button label="Cancel" variant="secondary" onPress={() => setCategoryOpen(false)} />
+              <Button label="Create" onPress={saveCategory} loading={page.createCategory.isPending} />
+            </>
+          }
+        >
+          <Input
+            label="Category name"
+            value={categoryName}
+            onChangeText={setCategoryName}
+            placeholder="e.g. Specials"
+          />
+        </Modal>
         <Modal
           visible={modalOpen}
           onClose={() => setModalOpen(false)}
@@ -210,6 +253,7 @@ export default function MenuPage() {
             </Row>
           </Stack>
         </Modal>
+        </>
       }
     >
       {page.isError ? (

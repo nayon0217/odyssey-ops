@@ -1,5 +1,5 @@
-import { useRef, useState } from 'react';
-import { Modal, Platform, Pressable, StyleSheet, View, type ViewStyle } from 'react-native';
+import { useState } from 'react';
+import { Platform, Pressable, ScrollView, StyleSheet, View, type ViewStyle } from 'react-native';
 import { tokens } from '../tokens';
 import { Text } from './Text';
 import { FormField } from './FormField';
@@ -19,17 +19,17 @@ export type SelectProps<T extends string> = {
   testID?: string;
 };
 
-type TriggerLayout = { x: number; y: number; width: number; height: number };
-
-// react-native-web accepts arbitrary CSS-only style keys (boxShadow) that aren't part of
-// RN's ViewStyle type; typed `any` and gated to web so native styling stays untouched.
 function focusRingStyle(): ViewStyle | null {
   return Platform.OS === 'web'
     ? ({ boxShadow: `0 0 0 3px ${tokens.colors.focusRing}` } as unknown as ViewStyle)
     : null;
 }
 
-/** Custom dropdown — never relies on an HTML <select>, so it looks identical on web and native. */
+/**
+ * Custom select — never an HTML <select>, so it looks identical on web and native.
+ * The menu expands INLINE (in normal flow) rather than floating, which renders reliably
+ * inside any container (pages, modals, scroll views) with no positioning/clipping hacks.
+ */
 export function Select<T extends string>({
   value,
   onValueChange,
@@ -41,20 +41,9 @@ export function Select<T extends string>({
   disabled = false,
   testID,
 }: SelectProps<T>) {
-  const triggerRef = useRef<View>(null);
   const [open, setOpen] = useState(false);
-  const [layout, setLayout] = useState<TriggerLayout | null>(null);
   const hasError = !!errorText;
   const selected = options.find((option) => option.value === value);
-
-  const openMenu = () => {
-    if (disabled) return;
-    triggerRef.current?.measureInWindow((x, y, width, height) => {
-      setLayout({ x, y, width, height });
-      setOpen(true);
-    });
-  };
-  const closeMenu = () => setOpen(false);
 
   const borderColor = disabled
     ? tokens.colors.border.subtle
@@ -66,58 +55,50 @@ export function Select<T extends string>({
 
   return (
     <FormField label={label} helperText={helperText} errorText={errorText}>
-      <View ref={triggerRef} collapsable={false}>
-        <Pressable
-          testID={testID}
-          onPress={openMenu}
-          disabled={disabled}
-          accessibilityRole="button"
-          accessibilityState={{ disabled, expanded: open }}
-          style={(rawState) => {
-            const { pressed, hovered } = rawState as PressableState;
-            return [
-              styles.trigger,
-              {
-                borderColor: hovered && !disabled && !open && !hasError ? tokens.colors.border.strong : borderColor,
-                backgroundColor: disabled ? tokens.colors.surface.sunken : tokens.colors.surface.base,
-                transform: [{ scale: pressed && !disabled ? 0.99 : 1 }],
-              },
-              open && !disabled ? focusRingStyle() : null,
-            ];
-          }}
+      <Pressable
+        testID={testID}
+        onPress={() => !disabled && setOpen((o) => !o)}
+        disabled={disabled}
+        accessibilityRole="button"
+        accessibilityState={{ disabled, expanded: open }}
+        style={(rawState) => {
+          const { pressed, hovered } = rawState as PressableState;
+          return [
+            styles.trigger,
+            {
+              borderColor:
+                hovered && !disabled && !open && !hasError ? tokens.colors.border.strong : borderColor,
+              backgroundColor: disabled ? tokens.colors.surface.sunken : tokens.colors.surface.base,
+              transform: [{ scale: pressed && !disabled ? 0.99 : 1 }],
+            },
+            open && !disabled ? focusRingStyle() : null,
+          ];
+        }}
+      >
+        <Text
+          variant="body"
+          color={disabled ? 'muted' : selected ? 'primary' : 'muted'}
+          numberOfLines={1}
+          style={styles.triggerText}
         >
-          <Text
-            variant="body"
-            color={disabled ? 'muted' : selected ? 'primary' : 'muted'}
-            numberOfLines={1}
-            style={styles.triggerText}
-          >
-            {selected ? selected.label : placeholder}
-          </Text>
-          <Text variant="caption" color={disabled ? 'muted' : 'secondary'}>
-            {open ? '▲' : '▼'}
-          </Text>
-        </Pressable>
-      </View>
+          {selected ? selected.label : placeholder}
+        </Text>
+        <Text variant="caption" color={disabled ? 'muted' : 'secondary'}>
+          {open ? '▲' : '▼'}
+        </Text>
+      </Pressable>
 
-      <Modal visible={open} transparent animationType="none" onRequestClose={closeMenu}>
-        <Pressable
-          style={styles.backdrop}
-          onPress={closeMenu}
-          testID={testID ? `${testID}-backdrop` : undefined}
-        >
-          {layout ? (
-            <View
-              style={[
-                styles.menu,
-                {
-                  top: layout.y + layout.height + tokens.spacing.xs,
-                  left: layout.x,
-                  width: layout.width,
-                },
-              ]}
-            >
-              {options.map((option) => {
+      {open && !disabled ? (
+        <View style={styles.menu}>
+          <ScrollView style={styles.menuScroll} nestedScrollEnabled keyboardShouldPersistTaps="handled">
+            {options.length === 0 ? (
+              <View style={styles.option}>
+                <Text variant="bodySm" color="muted">
+                  No options
+                </Text>
+              </View>
+            ) : (
+              options.map((option) => {
                 const isSelected = option.value === value;
                 return (
                   <Pressable
@@ -125,7 +106,7 @@ export function Select<T extends string>({
                     testID={testID ? `${testID}-option-${option.value}` : undefined}
                     onPress={() => {
                       onValueChange(option.value);
-                      closeMenu();
+                      setOpen(false);
                     }}
                     style={(rawState) => {
                       const { pressed, hovered } = rawState as PressableState;
@@ -146,11 +127,11 @@ export function Select<T extends string>({
                     </Text>
                   </Pressable>
                 );
-              })}
-            </View>
-          ) : null}
-        </Pressable>
-      </Modal>
+              })
+            )}
+          </ScrollView>
+        </View>
+      ) : null}
     </FormField>
   );
 }
@@ -167,17 +148,17 @@ const styles = StyleSheet.create({
     gap: tokens.spacing.sm,
   },
   triggerText: { flex: 1 },
-  backdrop: { flex: 1 },
   menu: {
-    position: 'absolute',
+    marginTop: tokens.spacing.xs,
     backgroundColor: tokens.colors.surface.base,
     borderRadius: tokens.radius.md,
     borderWidth: tokens.border.hairline,
     borderColor: tokens.colors.border.subtle,
     paddingVertical: tokens.spacing.xs,
-    maxHeight: 240,
-    ...tokens.shadow.lg,
+    overflow: 'hidden',
+    ...tokens.shadow.md,
   },
+  menuScroll: { maxHeight: 220 },
   option: {
     paddingVertical: tokens.spacing.sm,
     paddingHorizontal: tokens.spacing.md,

@@ -1,4 +1,5 @@
-import { useListCustomers, useGetCustomer, type GetCustomer200 } from '@odyssey/api-client';
+import { useListCustomers, useGetCustomer } from '@odyssey/api-client';
+import type { GetCustomer200 } from '@odyssey/types';
 
 export function useCrmPage() {
   const query = useListCustomers();

@@ -4,6 +4,7 @@ import { createDb } from '../db/client';
 import { orders, orderItems, customers } from '../db/schema';
 import { homeSummarySchema } from '../db/zod-schemas';
 import { createRouter } from '../lib/openapi';
+import { sweepStalePreparingOrders } from '../services/orders';
 
 const router = createRouter();
 
@@ -23,6 +24,7 @@ router.openapi(
   }),
   async (c) => {
     const db = createDb(c.env.HYPERDRIVE.connectionString);
+    await sweepStalePreparingOrders(db);
 
     const [totals] = await db
       .select({

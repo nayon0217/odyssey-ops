@@ -1,11 +1,25 @@
 import type { ReactNode } from 'react';
-import { Pressable, ActivityIndicator, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import {
+  Pressable,
+  ActivityIndicator,
+  StyleSheet,
+  View,
+  Platform,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native';
 import { tokens } from '../tokens';
 import { Text } from './Text';
 
 // react-native-web adds hovered/focused to the Pressable state callback; base RN types
 // only declare `pressed`. This is the shared shape used across interactive primitives.
 export type PressableState = { pressed: boolean; hovered?: boolean; focused?: boolean };
+
+// Visible keyboard-focus ring (web). Reused by interactive primitives.
+export const WEB_FOCUS_RING =
+  Platform.OS === 'web'
+    ? ({ boxShadow: `0 0 0 3px ${tokens.colors.focusRing}`, outlineStyle: 'none' } as unknown as ViewStyle)
+    : null;
 
 export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'destructive';
 export type ButtonSize = 'sm' | 'md' | 'lg';
@@ -78,9 +92,10 @@ export function Button({
       accessibilityRole="button"
       accessibilityState={{ disabled: isDisabled, busy: loading }}
       style={(rawState) => {
-        const { pressed, hovered } = rawState as PressableState;
+        const { pressed, hovered, focused } = rawState as PressableState;
         return [
         styles.base,
+        focused && !pressed ? WEB_FOCUS_RING : null,
         {
           minHeight: dims.height,
           paddingVertical: dims.py,

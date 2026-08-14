@@ -15,6 +15,7 @@ import { createRouter } from '../lib/openapi';
 import { notFound, conflict, unprocessable, errorResponse } from '../lib/errors';
 import { createOrder, UnavailableItemsError } from '../services/create-order';
 import { getSettings } from '../services/settings';
+import { sweepStalePreparingOrders } from '../services/orders';
 
 const router = createRouter();
 
@@ -42,6 +43,7 @@ router.openapi(
   }),
   async (c) => {
     const db = createDb(c.env.HYPERDRIVE.connectionString);
+    await sweepStalePreparingOrders(db);
     const { status, customerId, from, to } = c.req.valid('query');
 
     const conditions = [
@@ -80,6 +82,7 @@ router.openapi(
   }),
   async (c) => {
     const db = createDb(c.env.HYPERDRIVE.connectionString);
+    await sweepStalePreparingOrders(db);
     const { id } = c.req.valid('param');
 
     const [order] = await db.select().from(orders).where(eq(orders.id, id));

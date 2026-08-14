@@ -10,6 +10,7 @@ import {
 } from '../db/zod-schemas';
 import { createRouter } from '../lib/openapi';
 import { notFound, errorResponse } from '../lib/errors';
+import { sweepStalePreparingOrders } from '../services/orders';
 
 const router = createRouter();
 
@@ -95,6 +96,7 @@ router.openapi(
   }),
   async (c) => {
     const db = createDb(c.env.HYPERDRIVE.connectionString);
+    await sweepStalePreparingOrders(db);
     const { id } = c.req.valid('param');
 
     const [row] = await db

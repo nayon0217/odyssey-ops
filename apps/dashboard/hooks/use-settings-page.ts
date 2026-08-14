@@ -1,5 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { useGetSettings, useUpdateSettings, type GetSettings200 } from '@odyssey/api-client';
+import { useGetSettings, useUpdateSettings } from '@odyssey/api-client';
+import type { GetSettings200 } from '@odyssey/types';
 
 export function useSettingsPage() {
   const queryClient = useQueryClient();

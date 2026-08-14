@@ -12,11 +12,11 @@ import {
   LoadingState,
   ErrorState,
   EmptyState,
+  Grid,
   tokens,
   type Column,
 } from '@odyssey/ui';
-import type { OrderStatus } from '@odyssey/shared';
-import type { GetHomeSummary200RecentOrdersItem } from '@odyssey/api-client';
+import type { GetHomeSummary200RecentOrdersItem } from '@odyssey/types';
 import { PageScaffold } from '../../components/PageScaffold';
 import { useHomePage } from '../../hooks/use-home-page';
 import { formatMoney, formatRelative } from '../../lib/format';
@@ -36,7 +36,7 @@ export default function HomePage() {
       key: 'status',
       header: 'Status',
       width: 130,
-      render: (o) => <StatusBadge status={o.status as OrderStatus} />,
+      render: (o) => <StatusBadge status={o.status} />,
     },
     {
       key: 'total',
@@ -84,28 +84,20 @@ export default function HomePage() {
         </Stack>
       ) : page.summary ? (
         <Stack gap="lg">
-          <Row gap="lg" wrap="wrap">
-            <View style={styles.statCol}>
-              <StatCard label="Total orders" value={String(page.summary.totalOrders)} />
-            </View>
-            <View style={styles.statCol}>
-              <StatCard label="Revenue" value={formatMoney(page.summary.revenueCents)} />
-            </View>
-            <View style={styles.statCol}>
-              <StatCard label="Pending orders" value={String(page.summary.pendingOrders)} />
-            </View>
-            <View style={styles.statCol}>
-              <StatCard
-                label="Top item"
-                value={page.summary.popularItems[0]?.name ?? '—'}
-                hint={
-                  page.summary.popularItems[0]
-                    ? `×${page.summary.popularItems[0].quantity} sold`
-                    : undefined
-                }
-              />
-            </View>
-          </Row>
+          <Grid minChildWidth={200} gap="lg">
+            <StatCard label="Total orders" value={String(page.summary.totalOrders)} />
+            <StatCard label="Revenue" value={formatMoney(page.summary.revenueCents)} />
+            <StatCard label="Pending orders" value={String(page.summary.pendingOrders)} />
+            <StatCard
+              label="Top item"
+              value={page.summary.popularItems[0]?.name ?? '—'}
+              hint={
+                page.summary.popularItems[0]
+                  ? `×${page.summary.popularItems[0].quantity} sold`
+                  : undefined
+              }
+            />
+          </Grid>
 
           <Card>
             <CardHeader title="Popular items" />

@@ -28,6 +28,8 @@ import {
   EmptyState,
   ErrorState,
   LoadingState,
+  Callout,
+  Grid,
 } from '@odyssey/ui';
 import { ORDER_STATUSES } from '@odyssey/shared';
 import { Section, ShowcaseRow, Swatch } from '../components/ui-showcase/Section';
@@ -273,6 +275,24 @@ export default function UILibrary() {
           <Skeleton width={120} height={40} radius="md" />
           <View style={{ width: 240 }}><SkeletonText lines={3} /></View>
         </Row>
+      </Section>
+
+      <Section title="Callouts" description="Inline success / warning / danger / info patterns (persist in context, unlike toasts).">
+        <Callout tone="success" title="Order placed">Order #1042 was created and is now pending.</Callout>
+        <Callout tone="warning" title="Not accepting orders">New orders are paused in Settings.</Callout>
+        <Callout tone="danger" title="Item unavailable">Remove unavailable items before placing the order.</Callout>
+        <Callout tone="info" title="Heads up">An order older than an hour is always at least “ready”.</Callout>
+      </Section>
+
+      <Section title="Grid" description="Responsive auto-wrapping layout primitive (layout/grid rules).">
+        <Grid minChildWidth={180} gap="md">
+          {['Total orders', 'Revenue', 'Pending', 'Popular'].map((label) => (
+            <Card key={label}>
+              <Text variant="overline" color="secondary">{label}</Text>
+              <Text variant="h2">—</Text>
+            </Card>
+          ))}
+        </Grid>
       </Section>
 
       <View style={{ height: tokens.spacing['4xl'] }} />

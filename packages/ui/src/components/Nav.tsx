@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { tokens } from '../tokens';
 import { Text } from './Text';
 import { Stack, Row } from './Box';
-import type { PressableState } from './Button';
+import { WEB_FOCUS_RING, type PressableState } from './Button';
 
 export type NavItem = {
   key: string;
@@ -37,7 +37,7 @@ export function SideNav({ items, activeKey, onSelect, header, footer, testID }: 
               accessibilityRole="button"
               accessibilityState={{ selected: isActive }}
               style={(rawState) => {
-                const { hovered, pressed } = rawState as PressableState;
+                const { hovered, pressed, focused } = rawState as PressableState;
                 return [
                   styles.item,
                   {
@@ -47,6 +47,7 @@ export function SideNav({ items, activeKey, onSelect, header, footer, testID }: 
                         ? tokens.colors.surface.raised
                         : 'transparent',
                   },
+                  focused && !pressed ? WEB_FOCUS_RING : null,
                 ];
               }}
             >
